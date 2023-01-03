@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+  #NestJS
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: doran-backend
+    env_file:
+      - ./.env.production
+    ports:
+      - 3000:3000
+    restart: always
+
+  # MySQL
+  mysql:
+    build:
+      context: .
+      dockerfile: mysql.Dockerfile
+    container_name: mysql
+    env_file:
+      - ./.env.production
+    volumes:
+      - ./db/my.conf:/etc/mysql/my.conf
+    ports:
+      - 3306:3306
+    restart: always
