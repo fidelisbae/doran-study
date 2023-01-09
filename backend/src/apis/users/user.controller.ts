@@ -25,10 +25,13 @@ export class UserController {
     @Body() input: CreateUserInput, //
     @Res() res: Response,
   ) {
-    const result = await this.userService.createUser(input);
-    const { deletedAt, createdAt, updatedAt, ...other } = result;
+    await this.userService.checkInfo(input.id, input.nickName);
+    await this.userService.checkValidatePwd(input.password);
 
-    res.status(HttpStatus.CREATED).send(other);
-    return other;
+    const result = await this.userService.createUser(input);
+    const { deletedAt, createdAt, updatedAt, password, ...output } = result;
+
+    res.status(HttpStatus.CREATED).send(output);
+    return output;
   }
 }
