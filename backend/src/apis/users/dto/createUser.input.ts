@@ -1,11 +1,10 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsString, MinLength } from 'class-validator';
-import { UserEntity } from '../entities/user.entity';
 
 export class CreateUserInput {
   @IsString()
   @MinLength(1, {
-    message: 'ID는 최소 1글자 이상이여야 합니다.',
+    message: 'Your id is too short! It must be 5 characters or more!',
   })
   @ApiProperty({
     example: 'user123',
@@ -14,7 +13,7 @@ export class CreateUserInput {
 
   @IsString()
   @MinLength(1, {
-    message: '비밀번호는 최소 1글자 이상이여야 합니다.',
+    message: 'Your password is too short! It must be 1 characters or more!',
   })
   @ApiProperty({
     example: '12345!@fd',
@@ -23,7 +22,7 @@ export class CreateUserInput {
 
   @IsString()
   @MinLength(1, {
-    message: '닉네임은 최소 1글자 이상이여야 합니다.',
+    message: 'Your nickname is too short! It must be 5 characters or more!',
   })
   @ApiProperty({
     example: '홍길동',
