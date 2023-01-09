@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 
+import { UserModule } from './apis/users/user.module';
+
 @Module({
   imports: [
     ///////////////////////////////////////////////////////////////////////////
@@ -16,11 +18,14 @@ import { AppController } from './app.controller';
       password: '1234',
       database: 'doran',
       entities: [
-        __dirname + '/**/*.entity.*', //
+        __dirname + '/apis/**/*.entity.*', //
       ],
       synchronize: true,
       logging: true,
     }),
+
+    // Modules
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
