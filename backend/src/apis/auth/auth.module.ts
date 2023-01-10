@@ -9,6 +9,7 @@ import { JwtAccessStrategy } from 'src/commons/auth/jwt-access.strategy';
 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { JwtRefreshStrategy } from 'src/commons/auth/jwt-refresh.strategy';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AuthController } from './auth.controller';
   providers: [
     AuthService, //
     JwtAccessStrategy,
+    JwtRefreshStrategy,
   ],
   controllers: [
     AuthController, //
@@ -28,6 +30,7 @@ import { AuthController } from './auth.controller';
   exports: [
     AuthService, //
     JwtAccessStrategy,
+    JwtRefreshStrategy,
   ],
 })
 export class AuthModule {}
