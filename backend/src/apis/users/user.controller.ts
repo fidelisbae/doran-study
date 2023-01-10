@@ -6,7 +6,7 @@ import { UserService } from './user.service';
 import { CreateUserInput } from './dto/createUser.input';
 
 @ApiTags('Users')
-@Controller()
+@Controller('/users')
 export class UserController {
   constructor(
     private readonly userService: UserService, //
@@ -20,7 +20,7 @@ export class UserController {
   @ApiBody({
     type: CreateUserInput, //
   })
-  @Post('/create')
+  @Post('/createUser')
   async createUser(
     @Body() input: CreateUserInput, //
     @Res() res: Response,
@@ -31,7 +31,6 @@ export class UserController {
     const result = await this.userService.createUser(input);
     const { deletedAt, createdAt, updatedAt, password, ...output } = result;
 
-    res.status(HttpStatus.CREATED).send(output);
-    return output;
+    return res.status(HttpStatus.CREATED).json(output);
   }
 }
