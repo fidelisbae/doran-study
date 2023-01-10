@@ -1,12 +1,21 @@
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import {
   Body,
   Controller,
   Post,
+  Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 
 import { UserService } from '../users/user.service';
@@ -42,7 +51,21 @@ export class AuthController {
       );
     }
 
+    this.authService.setRefreshToken(user, res);
     const accessToken = this.authService.getAccessToken(user);
+
     return res.status(201).json({ accessToken: accessToken });
+  }
+
+  @ApiBearerAuth('access-token or refresh-token')
+  @ApiUnauthorizedResponse({ description: 'Invalid Credential' })
+  @UseGuards(AuthGuard('refreshToken'))
+  @Post('/restoreAccessToken')
+  restoreAccessToken(
+    @Req() req: Express.Request, //
+  ) {
+    //  **** HELP ****
+    console.log('req=====', req);
+    // this.authService.getAccessToken(user);
   }
 }
