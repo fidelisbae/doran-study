@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
-import { Body, ConflictException, Controller, Post, Res } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, ConflictException, Controller, Post, Res } from '@nestjs/common';
 
 import { UserService } from '../users/user.service';
 
@@ -9,7 +9,7 @@ import { AuthInput } from './dto/login.input';
 import { AuthService } from './auth.service';
 
 @ApiTags('Auth')
-@Controller()
+@Controller('/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService, //
@@ -27,7 +27,7 @@ export class AuthController {
     @Body() input: AuthInput, //
     @Res() res: Response,
   ) {
-    const user = await this.userService.isVailedUser(input.id);
+    const user = await this.userService.isValidUser(input.id);
     const isAuthenticated = await bcrypt.compare(input.password, user.password);
 
     if (!isAuthenticated) {
@@ -37,7 +37,6 @@ export class AuthController {
     }
 
     const accessToken = this.authService.getAccessToken(user);
-    res.status(201).send(accessToken);
-    return accessToken;
+    return res.status(201).json({ accessToken: accessToken });
   }
 }
