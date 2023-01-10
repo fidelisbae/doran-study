@@ -4,7 +4,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
-  ApiQuery,
+  ApiParam,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -13,8 +13,8 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Param,
   Post,
-  Query,
   Req,
   Res,
   UseGuards,
@@ -33,13 +33,13 @@ export class UserController {
   @ApiBearerAuth('access-token or refresh-token')
   @UseGuards(AuthGuard('accessToken'))
   @ApiUnauthorizedResponse({ description: 'Invalid Credential' })
-  @ApiQuery({
-    type: CreateUserInput, //
+  @ApiParam({
+    name: 'user_id',
   })
-  @Get('/getUser')
+  @Get('/:user_id')
   async getUsers(
     @Req() req: Express.Request,
-    @Query() user_id: CreateUserInput,
+    @Param('user_id') user_id: string,
   ) {
     console.log('req', req);
     console.log(user_id);
