@@ -4,6 +4,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -13,6 +14,7 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Param,
   Post,
   Query,
   Req,
@@ -33,16 +35,22 @@ export class UserController {
   @ApiBearerAuth('access-token or refresh-token')
   @UseGuards(AuthGuard('accessToken'))
   @ApiUnauthorizedResponse({ description: 'Invalid Credential' })
-  @ApiQuery({
-    type: CreateUserInput, //
-  })
-  @Get('/getUser')
+  // @ApiQuery({
+  //   type: CreateUserInput, //
+  // })
+  @ApiParam({ name: 'user_id' })
+  // uri에 함수이름을 쓰는게 아님 uri가 /users 면 post, get, delete, put 으로 crud 구분가능
+  // @Get('/getUser')
+  // path param 으로 user_id를 받도록 수정했음
+  @Get('/:user_id')
+  // 전체 유저가 아니라 특정 유저를 조회할거면 getUsers => getUser 로 수정하도록
   async getUsers(
     @Req() req: Express.Request,
-    @Query() user_id: CreateUserInput,
+    // @Query() user_id: CreateUserInput,
+    @Param('user_id') userId: string,
   ) {
-    console.log('req', req);
-    console.log(user_id);
+    // console.log('req', req);
+    console.log(userId);
     return '성공!!';
   }
 
