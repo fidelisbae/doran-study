@@ -6,7 +6,8 @@ import { UserService } from './user.service';
 import { CreateUserInput } from './dto/createUser.input';
 
 @ApiTags('Users')
-@Controller()
+// @Controller()
+@Controller('/users')
 export class UserController {
   constructor(
     private readonly userService: UserService, //
@@ -31,7 +32,7 @@ export class UserController {
     const result = await this.userService.createUser(input);
     const { deletedAt, createdAt, updatedAt, password, ...output } = result;
 
-    res.status(HttpStatus.CREATED).send(output);
-    return output;
+    return res.status(HttpStatus.CREATED).json(output);
+    // return output;
   }
 }

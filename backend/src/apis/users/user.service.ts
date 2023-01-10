@@ -71,12 +71,17 @@ export class UserService {
   async createUser(
     input: CreateUserInput, //
   ): Promise<UserEntity> {
-    const { id, password, nickName } = input;
+    // const { id, password, nickName } = input;
+    const { password, ...form } = input;
     const hashPassword = await bcrypt.hash(password, 10);
 
+    // const user = await this.userRepository.save({
+    //   id,
+    //   nickName,
+    //   password: hashPassword,
+    // });
     const user = await this.userRepository.save({
-      id,
-      nickName,
+      ...form,
       password: hashPassword,
     });
 

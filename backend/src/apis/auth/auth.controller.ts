@@ -9,7 +9,8 @@ import { AuthInput } from './dto/login.input';
 import { AuthService } from './auth.service';
 
 @ApiTags('Auth')
-@Controller()
+// @Controller()
+@Controller('/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService, //
@@ -27,7 +28,9 @@ export class AuthController {
     @Body() input: AuthInput, //
     @Res() res: Response,
   ) {
+    // 스펠링체크하세요
     const user = await this.userService.isVailedUser(input.id);
+
     const isAuthenticated = await bcrypt.compare(input.password, user.password);
 
     if (!isAuthenticated) {
@@ -37,7 +40,8 @@ export class AuthController {
     }
 
     const accessToken = this.authService.getAccessToken(user);
-    res.status(201).send(accessToken);
-    return accessToken;
+    // 그냥 토큰만 던져주기보다는 이런식으로?
+    return res.status(201).json({ access_token: accessToken });
+    // return accessToken;
   }
 }
