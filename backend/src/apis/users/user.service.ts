@@ -17,7 +17,7 @@ export class UserService {
   // utils
 
   /** 로그인을 위한 회원정보 판별 */
-  async isVailedUser(
+  async isValidUser(
     id: string, //
   ) {
     const user = await this.userRepository.findOne({
@@ -71,12 +71,11 @@ export class UserService {
   async createUser(
     input: CreateUserInput, //
   ): Promise<UserEntity> {
-    const { id, password, nickName } = input;
+    const { password, ...form } = input;
     const hashPassword = await bcrypt.hash(password, 10);
 
     const user = await this.userRepository.save({
-      id,
-      nickName,
+      ...form,
       password: hashPassword,
     });
 
