@@ -1,7 +1,13 @@
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Body, ConflictException, Controller, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 import { UserService } from '../users/user.service';
 
@@ -31,7 +37,7 @@ export class AuthController {
     const isAuthenticated = await bcrypt.compare(input.password, user.password);
 
     if (!isAuthenticated) {
-      throw new ConflictException(
+      throw new UnauthorizedException(
         '비밀번호가 일치하지 않으므로 로그인할 수 없습니다.',
       );
     }
