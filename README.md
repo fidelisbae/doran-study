@@ -76,6 +76,30 @@ https://fan-smile-44f.notion.site/Docker-MySQL-env-9a0f368a50db4835a18b95f9e7124
 - 로그인이 정상적으로 되었을 경우에는 회원만이 갖을 수 있는 권한을 이용하기 위한 `AccessToken` 발급을 해, 각각의 서비스를 이용할 수 있게 해주어야 한다.
   <br />
   <br />
-  <br />
 
-- AccessToken 발급 과정 진행중
+## `2023.01.10`
+
+### 💚️ Swagger
+
+- swagger를 이용해 Header에 token을 싣으려면 다음과 같이 추가해야할 부분이 있다.
+  ```
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'Bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'access-token or refresh-token',
+    )
+  ```
+  > 사용할 토큰의 종류와 싣을 부분을 설정해야 Swagger에서 Token을 사용할 수 있다.
+- 추가적인 설정으로는 `swaggerOption`이 있다.
+  ```
+  SwaggerModule.setup(_,_,_, {
+    swaggerOptions: { persistAuthorization: true },
+  });
+  ```
+  > persistAuthorization을 true로 설정하면 새로고침을 해도 입력해둔 accessToken이 휘발되지 않는다.
