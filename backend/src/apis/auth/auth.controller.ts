@@ -63,9 +63,11 @@ export class AuthController {
   @Post('/restoreAccessToken')
   restoreAccessToken(
     @Req() req: Express.Request, //
+    @Res() res: Response,
   ) {
-    //  **** HELP ****
-    console.log('req=====', req);
-    // this.authService.getAccessToken(user);
+    const user = req['user'];
+    this.authService.setRefreshToken(user, res);
+    const accessToken = this.authService.getAccessToken(user);
+    return res.status(201).json({ accessToken: accessToken });
   }
 }
