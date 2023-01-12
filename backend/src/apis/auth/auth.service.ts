@@ -11,18 +11,18 @@ export class AuthService {
 
   /** AccessToken 발급 */
   getAccessToken(
-    user: { id: string; nickName: string; password?: string }, //
+    user: UserEntity, //
   ) {
     const accessToken = this.jwtService.sign(
       { id: user.id, nickName: user.nickName },
-      { secret: 'accessKey', expiresIn: '1s' },
+      { secret: 'accessKey', expiresIn: '30s' },
     );
     return accessToken;
   }
 
   /** RefreshToken 생성 */
   setRefreshToken(
-    user: { id: string; nickName: string }, //
+    user: UserEntity, //
     res: any,
   ) {
     const refreshToken = this.jwtService.sign(
