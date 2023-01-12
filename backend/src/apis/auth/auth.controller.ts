@@ -31,6 +31,8 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
+  //////////////////////////////////////////////////////////
+  /** 로그인하기 */
   @ApiOperation({
     summary: '로그인하기',
   })
@@ -57,16 +59,20 @@ export class AuthController {
     return res.status(201).json({ accessToken: accessToken });
   }
 
+  // ////////////////////////////////////////////////////////////
+  // accessToken 되살리기
   @ApiBearerAuth('access-token or refresh-token')
   @ApiUnauthorizedResponse({ description: 'Invalid Credential' })
   @UseGuards(AuthGuard('refreshToken'))
   @Post('/restoreAccessToken')
-  restoreAccessToken(
+  async restoreAccessToken(
     @Req() req: Express.Request, //
     @Res() res: Response,
   ) {
-    const user = req['user'];
-    this.authService.setRefreshToken(user, res);
+    const userInfo = req['user'];
+    const user = await this.userService.isValidUser(userInfo.id);
+
+    await this.authService.setRefreshToken(user, res);
     const accessToken = this.authService.getAccessToken(user);
     return res.status(201).json({ accessToken: accessToken });
   }
