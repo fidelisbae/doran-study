@@ -1,3 +1,4 @@
+import Redis from 'ioredis';
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -10,6 +11,7 @@ import {
 } from '@nestjs/swagger';
 import {
   Body,
+  ConflictException,
   Controller,
   Get,
   HttpStatus,
@@ -21,6 +23,7 @@ import {
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
+import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import { CreateUserInput } from './dto/createUser.input';
 
 @ApiTags('Users')
@@ -28,6 +31,9 @@ import { CreateUserInput } from './dto/createUser.input';
 export class UserController {
   constructor(
     private readonly userService: UserService, //
+
+    @InjectRedis('access_token')
+    private readonly access_token_pool: Redis,
   ) {}
 
   @ApiBearerAuth('access-token or refresh-token')
@@ -41,8 +47,13 @@ export class UserController {
     @Req() req: Express.Request,
     @Param('user_id') user_id: string,
   ) {
-    console.log('req', req);
-    console.log(user_id);
+    const accessToken = req['headers'].authorization.replace('Bearer ', '');
+    const bl_accessToken = await this.access_token_pool.get(accessToken);
+
+    if (bl_accessToken) {
+      throw new ConflictException('로그인을 먼저 해주세요.');
+    }
+
     return '성공!!';
   }
 
