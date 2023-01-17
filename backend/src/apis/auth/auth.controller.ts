@@ -59,8 +59,33 @@ export class AuthController {
     return res.status(201).json({ accessToken: accessToken });
   }
 
+  /** 로그아웃 */
+  @ApiBearerAuth('access-token or refresh-token')
+  @ApiUnauthorizedResponse({ description: 'Invalid Credential' })
+  @UseGuards(AuthGuard('accessToken'))
+  @ApiOperation({
+    summary: '로그아웃하기',
+  })
+  @Post('/logout')
+  async logout(
+    @Req() req: Express.Request,
+    @Res() res: Response, //
+  ) {
+    const user = req['user'];
+    const header = req['headers'];
+
+    const result = await this.authService.logout(
+      user.id,
+      header.authorization,
+      header.cookie,
+    );
+    return result === '로그아웃 되었습니다.'
+      ? res.status(201).json(result)
+      : res.status(404).json(result);
+  }
+
   // ////////////////////////////////////////////////////////////
-  // accessToken 되살리기
+  // accessToken 재발급
   @ApiBearerAuth('access-token or refresh-token')
   @ApiUnauthorizedResponse({ description: 'Invalid Credential' })
   @UseGuards(AuthGuard('refreshToken'))
