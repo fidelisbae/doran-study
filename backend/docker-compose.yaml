@@ -14,4 +14,12 @@ services:
       - ./db/my.conf:/etc/mysql/my.conf
     ports:
       - 23306:3306
-    # restart: always
+    restart: always
+
+  # Redis
+  redis:
+    image: redis:latest
+    container_name: ds_redis
+    ports:
+      - 6379:6379
+    restart: always
