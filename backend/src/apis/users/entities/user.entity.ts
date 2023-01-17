@@ -1,3 +1,4 @@
+import { IsString } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -6,7 +7,6 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { IsString } from 'class-validator';
 
 @Entity({ name: 'users' })
 export class UserEntity {
