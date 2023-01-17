@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { RedisModule } from '@liaoliaots/nestjs-redis';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppService } from './app.service';
@@ -23,6 +24,25 @@ import { AuthModule } from './apis/auth/auth.module';
       ],
       synchronize: true,
       logging: true,
+    }),
+
+    //////////////////////////////////////////////////////////////////////
+    // Redis //
+    RedisModule.forRoot({
+      config: [
+        {
+          host: 'localhost',
+          namespace: 'access_token',
+          db: 1,
+          port: 6379,
+        },
+        {
+          host: 'localhost',
+          namespace: 'refresh_token',
+          db: 2,
+          port: 6379,
+        },
+      ],
     }),
 
     // Modules
