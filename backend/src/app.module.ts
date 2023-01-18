@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 
 import { UserModule } from './apis/users/user.module';
 import { AuthModule } from './apis/auth/auth.module';
+import { SocketModule } from './commons/socket/socket.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { AuthModule } from './apis/auth/auth.module';
     // Modules
     UserModule,
     AuthModule,
+    SocketModule,
   ],
   controllers: [AppController],
   providers: [AppService],
