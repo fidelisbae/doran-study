@@ -34,6 +34,17 @@ export class AuthService {
       result = true;
     }
 
+    const isAccessToken = await this.access_token_pool.get(
+      accessToken.replace('Bearer ', ''),
+    );
+    const isRefreshToken = await this.refresh_token_pool.get(
+      refreshToken.replace('refreshToken=', ''),
+    );
+
+    if (isAccessToken && isRefreshToken) {
+      throw new ConflictException('이미 로그아웃 처리가 되었습니다.');
+    }
+
     await this.access_token_pool.set(
       accessToken.replace('Bearer ', ''),
       userID,
