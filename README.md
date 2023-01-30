@@ -1,12 +1,11 @@
 # PokeChat
 
-Socket.io 라이브러리를 이용한 포켓몬을 실시간 교환하는 채팅 서비스.
+WebSocket 통신을 이용한 포켓몬을 실시간 교환하는 채팅 서비스.
 <br />
 <br />
 
 ## 🖥️ 프로젝트 소개
 
----
 
 포켓몬스터 라는 게임을 즐기기 위해 필요한 건 포켓몬 교환입니다.  
 이 교환을 활발하고 편하게 이용하기 위해 채팅 서비스를 생각하게 되었습니다.
@@ -15,15 +14,12 @@ Socket.io 라이브러리를 이용한 포켓몬을 실시간 교환하는 채�
 
 ## ⏳ 개발 기간
 
----
 
 22.01 ~ 22.01 `1월->2월로 연장`
 <br />
 <br />
 
 ## ⚙ 개발 환경
-
----
 
 - 보일러 플레이트 제작 : [NestJS](https://nest.com), typescript
 - NodeJS - 16.17.1
@@ -38,8 +34,6 @@ Socket.io 라이브러리를 이용한 포켓몬을 실시간 교환하는 채�
   <br />
 
 ## 🎮 주요 기능
-
----
 
 ### 🟢 [로그인](backend/src/apis/auth/)
 
@@ -63,8 +57,6 @@ Socket.io 라이브러리를 이용한 포켓몬을 실시간 교환하는 채�
   <br />
 
   ## 📖 작업하며 학습 내용
-
-  ***
 
 - [🐋 Docker 설정](https://fan-smile-44f.notion.site/docker-e7343d1c57934b9fa8c8d7e39e590db5)
 - [프로토콜(양방향 통신인 Websocket과 그 이외의 통신규약)](https://fan-smile-44f.notion.site/Protocol-API-7ea172d4e91f46439f2c856e36fc562a)
