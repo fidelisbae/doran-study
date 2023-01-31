@@ -13,7 +13,7 @@ WebSocket 통신을 이용한 포켓몬을 실시간 교환하는 채팅 서비�
 
 ## ⏳ 개발 기간
 
-22.01 ~ 22.01 `1월->2월로 연장`
+22.01 ~ 22.02
 <br />
 <br />
 
@@ -74,4 +74,4 @@ WebSocket 통신을 이용한 포켓몬을 실시간 교환하는 채팅 서비�
       'access-token or refresh-token',
     )
   ```
-  - [✅ 테스트 코드 작성](https://velog.io/@doll950904/NestJS-%ED%9A%8C%EC%9B%90%EA%B0%80%EC%9E%85-API%EC%9D%98-TestCode%EB%A5%BC-%EC%9E%91%EC%84%B1%ED%95%98%EC%9E%90with.Jest)
+- [✅ 테스트 코드 작성](https://velog.io/@doll950904/NestJS-%ED%9A%8C%EC%9B%90%EA%B0%80%EC%9E%85-API%EC%9D%98-TestCode%EB%A5%BC-%EC%9E%91%EC%84%B1%ED%95%98%EC%9E%90with.Jest)
