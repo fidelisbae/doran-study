@@ -1,13 +1,10 @@
-import { RedisModule } from '@liaoliaots/nestjs-redis';
-import { RedisModuleOptions } from '@liaoliaots/nestjs-redis';
-import { ConflictException, INestApplication } from '@nestjs/common';
+import { getRedisToken, RedisModule } from '@liaoliaots/nestjs-redis';
+import { createRequest, createResponse } from 'node-mocks-http';
 import { Test, TestingModule } from '@nestjs/testing';
-import { request } from 'https';
-import Redis from 'ioredis';
-import { createResponse } from 'node-mocks-http';
-import { UserController } from '../user.controller';
+import { ConflictException } from '@nestjs/common';
+
 import { UserService } from '../user.service';
-import redis from 'redis-mock';
+import { UserController } from '../user.controller';
 
 /** UserService Mocking */
 const mockUserService = {
@@ -16,15 +13,9 @@ const mockUserService = {
   createUser: jest.fn(),
 };
 
-/** About RedisModule */
-const redisOptions: RedisModuleOptions = {
-  config: [
-    {
-      namespace: 'access_token',
-      db: 1,
-      port: 6379,
-    },
-  ],
+/** Redis Mocking*/
+const mockAccessTokenPool = {
+  get: jest.fn(),
 };
 
 /** DTO - createUserInput */
@@ -33,6 +24,7 @@ interface IUser {
   password: string;
   nickName?: string;
 }
+
 const createUserDto: IUser = {
   id: 'user123',
   password: '12345!@fd',
@@ -40,40 +32,36 @@ const createUserDto: IUser = {
 };
 
 describe('UserController', () => {
-  let app: INestApplication;
   let userController;
   let userService;
-  let access_token_pool;
 
   beforeEach(async () => {
     jest.clearAllMocks();
     jest.resetAllMocks();
     jest.restoreAllMocks();
-    jest.useFakeTimers();
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [RedisModule.forRoot(redisOptions)],
       controllers: [UserController],
       providers: [
         {
           provide: UserService,
           useValue: mockUserService,
         },
+        {
+          provide: getRedisToken('access_token'),
+          useValue: mockAccessTokenPool,
+        },
       ],
     }).compile();
 
-    app = module.createNestApplication();
     userController = module.get<UserController>(UserController);
     userService = module.get<UserService>(UserService);
-    access_token_pool = module.get<RedisModule>(RedisModule);
-    await app.init();
   });
 
   afterAll(async () => {
     jest.clearAllMocks();
     jest.resetAllMocks();
     jest.restoreAllMocks();
-    jest.clearAllTimers();
   });
 
   it('to be defined', async () => {
@@ -135,20 +123,29 @@ describe('UserController', () => {
       }
     });
 
-    /** ⭐️ */
     describe('getUsers', () => {
-      it('should return success if provided with a valid access token', async () => {
-        jest.spyOn(access_token_pool, 'getClient').mockImplementation(() => {
-          return { get: jest.fn().mockResolvedValue(true) };
-        });
+      let req = createRequest({
+        headers: {
+          authorization: 'Bearer abc123',
+        },
+      });
 
-        const request = { headers: { authorization: 'Bearer abc123' } };
+      it('should return success if provided with a valid access token', async () => {
+        const result = await userController.getUsers(req, 'user123');
+
+        expect(mockAccessTokenPool.get).toBeCalledTimes(1);
+        expect(mockAccessTokenPool.get).toBeCalledWith('abc123');
+        expect(result).toEqual('성공!!');
+      });
+
+      it('should return an error if there is a token in bl_accessToken.', async () => {
+        mockAccessTokenPool.get.mockResolvedValue(true);
 
         try {
-          const result = await userController.getUsers(request, 'user123');
-          expect(result).toEqual('성공!!');
+          await userController.getUsers(req, 'user123');
         } catch (e) {
-          console.error(e);
+          expect(e instanceof ConflictException).toBeTruthy();
+          expect(e.message).toBe('로그인을 먼저 해주세요.');
         }
       });
     });
