@@ -35,30 +35,20 @@ import { DeleteUserInput } from './dto/deleteUser.input';
 export class UserController {
   constructor(
     private readonly userService: UserService, //
-
-    @InjectRedis('access_token')
-    private readonly access_token_pool: Redis,
   ) {}
 
   @ApiBearerAuth('access-token or refresh-token')
   @UseGuards(AuthGuard('accessToken'))
-  @ApiUnauthorizedResponse({ description: 'Invalid Credential' })
-  @ApiParam({
-    name: 'user_id',
+  @ApiOperation({
+    summary: '회원 정보 조회',
   })
-  @Get('/:user_id')
-  async getUsers(
+  @Get('/info')
+  async getUser(
     @Req() req: Express.Request,
-    @Param('user_id') user_id: string,
+    @Res() res: Response, //
   ) {
-    const accessToken = req['headers'].authorization.replace('Bearer ', '');
-    const bl_accessToken = await this.access_token_pool.get(accessToken);
-
-    if (bl_accessToken) {
-      throw new ConflictException('로그인을 먼저 해주세요.');
-    }
-
-    return '성공!!';
+    const result = await this.userService.getUser(req['header'].id);
+    return res.status(HttpStatus.OK).json(result);
   }
 
   // ========================================================= //
@@ -69,7 +59,7 @@ export class UserController {
   @ApiBody({
     type: CreateUserInput, //
   })
-  @Post('/createUser')
+  @Post('')
   async createUser(
     @Body() input: CreateUserInput, //
     @Res() res: Response,
@@ -92,7 +82,7 @@ export class UserController {
   @ApiBody({
     type: UpdateUserInput, //
   })
-  @Put('/updateUser')
+  @Put('')
   async updateUser(
     @Body() input: UpdateUserInput, //
     @Req() req: Express.Request,
@@ -115,7 +105,7 @@ export class UserController {
   @ApiBody({
     type: DeleteUserInput, //
   })
-  @Delete('/deleteUser')
+  @Delete('')
   async deleteUser(
     @Body() input: DeleteUserInput, //
     @Req() req: Express.Request,
