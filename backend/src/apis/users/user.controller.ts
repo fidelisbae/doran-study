@@ -14,10 +14,12 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
   Post,
+  Put,
   Req,
   Res,
   UseGuards,
@@ -83,14 +85,13 @@ export class UserController {
   /** 회원정보 수정 */
   @ApiBearerAuth('access-token or refresh-token')
   @UseGuards(AuthGuard('accessToken'))
-  @ApiUnauthorizedResponse({ description: 'Invalid Credential' })
   @ApiOperation({
     summary: '회원정보 수정하기',
   })
   @ApiBody({
     type: UpdateUserInput, //
   })
-  @Post('/updateUser')
+  @Put('/updateUser')
   async updateUser(
     @Body() input: UpdateUserInput, //
     @Req() req: Express.Request,
