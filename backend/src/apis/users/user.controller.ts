@@ -1,6 +1,7 @@
 import Redis from 'ioredis';
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
+import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -23,8 +24,8 @@ import {
 } from '@nestjs/common';
 
 import { UserService } from './user.service';
-import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import { CreateUserInput } from './dto/createUser.input';
+import { UpdateUserInput } from './dto/updateUser.input';
 
 @ApiTags('Users')
 @Controller('/users')
@@ -87,18 +88,19 @@ export class UserController {
     summary: '회원정보 수정하기',
   })
   @ApiBody({
-    type: CreateUserInput, //
+    type: UpdateUserInput, //
   })
   @Post('/updateUser')
   async updateUser(
-    @Body() input: CreateUserInput, //
+    @Body() input: UpdateUserInput, //
     @Req() req: Express.Request,
     @Res() res: Response,
   ) {
     const user = await this.userService.isValidUser(req['user'].id);
+    const isBool = await this.userService.updateUser(user.id, input);
+    const result =
+      isBool === true ? '수정이 완료되었습니다.' : '수정에 실패했습니다.';
 
-    const result = await this.userService.updateUser(user.id, input);
-
-    return res.status(HttpStatus.CREATED).json(result);
+    return res.status(HttpStatus.OK).json(result);
   }
 }

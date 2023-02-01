@@ -5,6 +5,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 
 import { UserEntity } from './entities/user.entity';
 import { CreateUserInput } from './dto/createUser.input';
+import { UpdateUserInput } from './dto/updateUser.input';
 
 @Injectable()
 export class UserService {
@@ -85,12 +86,10 @@ export class UserService {
   /** 회원정보 수정 */
   async updateUser(
     id: string,
-    input: CreateUserInput, //
+    input: UpdateUserInput, //
   ) {
-    const user = await this.userRepository.save({
-      ...input,
-    });
+    const result = await this.userRepository.update({ id: id }, input);
 
-    return user;
+    return result.affected ? true : false;
   }
 }
