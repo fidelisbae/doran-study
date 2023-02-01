@@ -35,6 +35,9 @@ import { DeleteUserInput } from './dto/deleteUser.input';
 export class UserController {
   constructor(
     private readonly userService: UserService, //
+
+    @InjectRedis('access_token')
+    private readonly access_token_pool: Redis,
   ) {}
 
   @ApiBearerAuth('access-token or refresh-token')
@@ -47,6 +50,13 @@ export class UserController {
     @Req() req: Express.Request,
     @Res() res: Response, //
   ) {
+    const accessToken = req['headers'].authorization.replace('Bearer ', '');
+    const bl_accessToken = await this.access_token_pool.get(accessToken);
+
+    if (bl_accessToken) {
+      throw new ConflictException('로그인을 먼저 해주세요.');
+    }
+
     const result = await this.userService.getUser(req['header'].id);
     return res.status(HttpStatus.OK).json(result);
   }
@@ -88,6 +98,13 @@ export class UserController {
     @Req() req: Express.Request,
     @Res() res: Response,
   ) {
+    const accessToken = req['headers'].authorization.replace('Bearer ', '');
+    const bl_accessToken = await this.access_token_pool.get(accessToken);
+
+    if (bl_accessToken) {
+      throw new ConflictException('로그인을 먼저 해주세요.');
+    }
+
     const user = await this.userService.isValidUser(req['user'].id);
     const isBool = await this.userService.updateUser(user.id, input);
     const result =
@@ -111,6 +128,13 @@ export class UserController {
     @Req() req: Express.Request,
     @Res() res: Response,
   ) {
+    const accessToken = req['headers'].authorization.replace('Bearer ', '');
+    const bl_accessToken = await this.access_token_pool.get(accessToken);
+
+    if (bl_accessToken) {
+      throw new ConflictException('로그인을 먼저 해주세요.');
+    }
+
     const user = await this.userService.isValidUser(req['user'].id);
     const isBool = await this.userService.deleteUser(
       user.id,
