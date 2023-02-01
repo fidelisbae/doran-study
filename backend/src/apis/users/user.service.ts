@@ -81,4 +81,16 @@ export class UserService {
 
     return user;
   }
+
+  /** 회원정보 수정 */
+  async updateUser(
+    id: string,
+    input: CreateUserInput, //
+  ) {
+    const user = await this.userRepository.save({
+      ...input,
+    });
+
+    return user;
+  }
 }

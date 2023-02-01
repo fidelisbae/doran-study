@@ -78,4 +78,27 @@ export class UserController {
 
     return res.status(HttpStatus.CREATED).json(output);
   }
+
+  /** 회원정보 수정 */
+  @ApiBearerAuth('access-token or refresh-token')
+  @UseGuards(AuthGuard('accessToken'))
+  @ApiUnauthorizedResponse({ description: 'Invalid Credential' })
+  @ApiOperation({
+    summary: '회원정보 수정하기',
+  })
+  @ApiBody({
+    type: CreateUserInput, //
+  })
+  @Post('/updateUser')
+  async updateUser(
+    @Body() input: CreateUserInput, //
+    @Req() req: Express.Request,
+    @Res() res: Response,
+  ) {
+    const user = await this.userService.isValidUser(req['user'].id);
+
+    const result = await this.userService.updateUser(user.id, input);
+
+    return res.status(HttpStatus.CREATED).json(result);
+  }
 }
