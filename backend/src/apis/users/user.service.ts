@@ -73,6 +73,18 @@ export class UserService {
   }
 
   // ///////////////////////////////////////////////////////////////////////////////
+  /** 로그인 회원 정보 조회 */
+  async getUser(
+    id: string, //
+  ) {
+    const result = await this.userRepository.findOne({
+      select: ['id', 'nickName'],
+      where: { id },
+    });
+
+    return result;
+  }
+
   /** 회원생성 */
   async createUser(
     input: CreateUserInput, //
