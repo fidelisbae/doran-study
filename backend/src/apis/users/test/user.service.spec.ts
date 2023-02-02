@@ -5,23 +5,37 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { UserEntity } from '../entities/user.entity';
 import { UserService } from '../user.service';
+import { ConflictException } from '@nestjs/common';
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 /** repository Mocking */
-const mockUserRepository = () => ({
+const mockUserRepository = {
   find: jest.fn(),
   findOne: jest.fn(),
   save: jest.fn(),
   update: jest.fn(),
   softDelete: jest.fn(),
-});
+};
+
+/** dummy */
+const id = 'user123';
+const nickName = '홍길동';
+const user = {
+  id: 'user123',
+  nickName: '홍길동',
+  password: 'Aa1@abcdefg',
+};
 
 describe('UserService', () => {
   let userService;
   let userRepository;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
@@ -39,19 +53,125 @@ describe('UserService', () => {
   });
 
   it('to Be defined', async () => {
+    {
+      data: null;
+    }
     expect(userService).toBeDefined();
     expect(userRepository).toBeDefined();
   });
 
+  /** ===== isValidUser Test ===== */
   describe('isValidUser', () => {
-    it('If id does not exist', async () => {
-      userRepository.findOne.mockResolvedValueOnce(undefined);
+    it('If ID does not exist', async () => {
+      mockUserRepository.findOne.mockResolvedValue(false);
 
       try {
         await userService.isValidUser('user123');
       } catch (e) {
+        expect(e instanceof ConflictException).toBeTruthy();
         expect(e.message).toBe('일치하는 id가 없습니다.');
       }
+    });
+
+    it('If ID already exist', async () => {
+      const id = 'user123';
+
+      mockUserRepository.findOne.mockResolvedValue(true);
+      const result = await userService.isValidUser('user123');
+
+      expect(mockUserRepository.findOne).toBeCalledTimes(1);
+      expect(mockUserRepository.findOne).toBeCalledWith({ where: { id: id } });
+      expect(result).toEqual(true);
+    });
+  });
+
+  /** ===== checkValidatePwd Test ===== */
+  describe('checkValidatePwd', () => {
+    it('should return true if password is valid', async () => {
+      const pwd = 'Aa1@abcdefg';
+      const result = await userService.checkValidatePwd(pwd);
+
+      expect(result).toBe(true);
+    });
+
+    it('should throw ConflictException if password is invalid', async () => {
+      const pwd = 'Aa1@abc';
+
+      try {
+        await userService.checkValidatePwd(pwd);
+      } catch (e) {
+        expect(e).toBeInstanceOf(ConflictException);
+        expect(e.message).toBe(
+          '유효한 비밀번호가 아닙니다. 양식에 맞춰 다시 입력해주세요.',
+        );
+      }
+    });
+  });
+
+  /** ===== checkInfo Test ===== */
+  describe('checkInfo', () => {
+    it('should return user If user is not already exist', async () => {
+      const result = mockUserRepository.find.mockResolvedValue([]);
+      await userService.checkInfo(id, nickName);
+
+      expect(mockUserRepository.find).toBeCalledTimes(1);
+      expect(mockUserRepository.find).toBeCalledWith({
+        where: [{ id }, { nickName }],
+      });
+    });
+
+    it('If user already exist', async () => {
+      mockUserRepository.find.mockResolvedValue([user]);
+
+      try {
+        await userService.checkInfo(id, nickName);
+      } catch (e) {
+        expect(e).toBeInstanceOf(ConflictException);
+        expect(e.message).toBe('이미 있는 아이디 혹은 닉네임 입니다.');
+      }
+    });
+  });
+
+  /** ===== getUser Test ===== */
+  describe('getUser', () => {
+    it('should return user If user already exist', async () => {
+      mockUserRepository.findOne.mockResolvedValue(user);
+      await userService.getUser(id);
+
+      expect(mockUserRepository.findOne).toBeCalledTimes(1);
+      expect(mockUserRepository.findOne).toBeCalledWith({
+        select: ['id', 'nickName'],
+        where: { id: id },
+      });
+    });
+
+    it('If user does not exist', async () => {
+      mockUserRepository.findOne.mockResolvedValue(false);
+
+      try {
+        await userService.getUser(id);
+      } catch (e) {
+        expect(e).toBeInstanceOf(ConflictException);
+        expect(e.message).toBe('일치하는 정보가 없습니다. 다시 입력해주세요.');
+      }
+    });
+  });
+
+  /** ===== createUser Test ===== */
+  describe('createUser', () => {
+    it('If the user does not exist, the password must be hashed and stored.', async () => {
+      jest.spyOn(bcrypt, 'hash').mockResolvedValue('dlkj1o3ifjo132l@#$');
+      mockUserRepository.save.mockResolvedValue(user);
+
+      await userService.createUser(user);
+
+      expect(bcrypt.hash).toBeCalledWith(user.password, 10);
+      expect(mockUserRepository.save).toBeCalledTimes(1);
+      expect(userRepository.save).toBeCalledWith({
+        id: id,
+        nickName: nickName,
+        password: 'dlkj1o3ifjo132l@#$',
+      });
     });
   });
 });
