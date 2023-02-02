@@ -82,6 +82,12 @@ export class UserService {
       where: { id },
     });
 
+    if (result === undefined) {
+      throw new ConflictException(
+        '일치하는 정보가 없습니다. 다시 입력해주세요.',
+      );
+    }
+
     return result;
   }
 
