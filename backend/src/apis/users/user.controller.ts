@@ -45,13 +45,6 @@ export class UserController {
     @Req() req: Express.Request,
     @Res() res: Response, //
   ) {
-    // const accessToken = req['headers'].authorization.replace('Bearer ', '');
-    // const bl_accessToken = await this.access_token_pool.get(accessToken);
-
-    // if (bl_accessToken) {
-    //   throw new ConflictException('로그인을 먼저 해주세요.');
-    // }
-
     const result = await this.userService.getUser(req['header'].id);
     return res.status(HttpStatus.OK).json(result);
   }
@@ -81,6 +74,7 @@ export class UserController {
   /** 회원정보 수정 */
   @ApiBearerAuth('access-token or refresh-token')
   @UseGuards(AuthGuard('accessToken'))
+  @UseGuards(CheckIsValidToken)
   @ApiOperation({
     summary: '회원정보 수정하기',
   })
@@ -111,6 +105,7 @@ export class UserController {
   /** 회원탈퇴 */
   @ApiBearerAuth('access-token or refresh-token')
   @UseGuards(AuthGuard('accessToken'))
+  @UseGuards(CheckIsValidToken)
   @ApiOperation({
     summary: '회원탈퇴하기',
   })
