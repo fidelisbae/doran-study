@@ -2,14 +2,7 @@ import Redis from 'ioredis';
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiParam,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   Body,
   ConflictException,
@@ -17,13 +10,14 @@ import {
   Delete,
   Get,
   HttpStatus,
-  Param,
   Post,
   Put,
   Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
+
+import { CheckIsValidToken } from 'src/commons/middlewares/check-isValidToken.guard';
 
 import { UserService } from './user.service';
 import { CreateUserInput } from './dto/createUser.input';
@@ -42,6 +36,7 @@ export class UserController {
 
   @ApiBearerAuth('access-token or refresh-token')
   @UseGuards(AuthGuard('accessToken'))
+  @UseGuards(CheckIsValidToken)
   @ApiOperation({
     summary: '회원 정보 조회',
   })
@@ -50,12 +45,12 @@ export class UserController {
     @Req() req: Express.Request,
     @Res() res: Response, //
   ) {
-    const accessToken = req['headers'].authorization.replace('Bearer ', '');
-    const bl_accessToken = await this.access_token_pool.get(accessToken);
+    // const accessToken = req['headers'].authorization.replace('Bearer ', '');
+    // const bl_accessToken = await this.access_token_pool.get(accessToken);
 
-    if (bl_accessToken) {
-      throw new ConflictException('로그인을 먼저 해주세요.');
-    }
+    // if (bl_accessToken) {
+    //   throw new ConflictException('로그인을 먼저 해주세요.');
+    // }
 
     const result = await this.userService.getUser(req['header'].id);
     return res.status(HttpStatus.OK).json(result);
