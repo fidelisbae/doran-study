@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { UserEntity } from '../entities/user.entity';
 import { UserService } from '../user.service';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, UnauthorizedException } from '@nestjs/common';
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
@@ -172,6 +172,77 @@ describe('UserService', () => {
         nickName: nickName,
         password: 'dlkj1o3ifjo132l@#$',
       });
+    });
+  });
+
+  /** ===== updateUser Test ===== */
+  describe('updateUser', () => {
+    const result = {
+      id: 'user123',
+      nickName: '홍길동2',
+      password: 'dlkj1o3ifjo132l@#$',
+    };
+    const input = {
+      nickName: '홍길동2',
+      password: 'Aa1@abcdefg',
+    };
+
+    it('If the user want to update a password and nickname', async () => {
+      jest.spyOn(bcrypt, 'hash').mockResolvedValue('dlkj1o3ifjo132l@#$');
+      mockUserRepository.update.mockResolvedValue(true);
+
+      await userService.updateUser(id, input);
+
+      expect(bcrypt.hash).toBeCalledWith(user.password, 10);
+      expect(mockUserRepository.update).toBeCalledTimes(1);
+      expect(userRepository.update).toBeCalledWith(id, input);
+    });
+
+    it('If the user want to update only nickname', async () => {
+      mockUserRepository.update.mockResolvedValue(true);
+
+      try {
+        await userService.updateUser(id, { nickName: '홍길동2' });
+      } catch (e) {
+        expect(bcrypt.hash).not.toBeCalled();
+        expect(mockUserRepository.update).toBeCalledTimes(1);
+        expect(userRepository.update).toBeCalledWith(id, {
+          nickName: '홍길동2',
+        });
+      }
+    });
+  });
+
+  /** ===== deleteUser Test ===== */
+  describe('deleteUser', () => {
+    const input = {
+      id: 'user123',
+      password: 'Aa1@abcdefg',
+    };
+
+    it('If password not collect', async () => {
+      mockUserRepository.findOne.mockResolvedValue(user);
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(undefined);
+
+      try {
+        await userService.deleteUser(id, 'Aa1@abcdefg2', input);
+      } catch (e) {
+        expect(bcrypt.compare).toBeCalledTimes(2);
+        expect(e).toBeInstanceOf(UnauthorizedException);
+        expect(e.message).toBe('비밀번호가 일치하지 않습니다.');
+      }
+    });
+
+    it('should return true When the user is deleted', async () => {
+      mockUserRepository.findOne.mockResolvedValue(user);
+      mockUserRepository.softDelete.mockResolvedValue(1);
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+
+      await userService.deleteUser(id, 'Aa1@abcdefg', input);
+
+      expect(bcrypt.compare).toBeCalledTimes(2);
+      expect(mockUserRepository.softDelete).toBeCalledTimes(1);
+      expect(mockUserRepository.softDelete).toBeCalledWith(id);
     });
   });
 });
