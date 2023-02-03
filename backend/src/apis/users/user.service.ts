@@ -1,10 +1,16 @@
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
-import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 import { UserEntity } from './entities/user.entity';
 import { CreateUserInput } from './dto/createUser.input';
+import { UpdateUserInput } from './dto/updateUser.input';
+import { DeleteUserInput } from './dto/deleteUser.input';
 
 @Injectable()
 export class UserService {
@@ -67,6 +73,24 @@ export class UserService {
   }
 
   // ///////////////////////////////////////////////////////////////////////////////
+  /** 로그인 회원 정보 조회 */
+  async getUser(
+    id: string, //
+  ) {
+    const result = await this.userRepository.findOne({
+      select: ['id', 'nickName'],
+      where: { id },
+    });
+
+    if (result === undefined) {
+      throw new ConflictException(
+        '일치하는 정보가 없습니다. 다시 입력해주세요.',
+      );
+    }
+
+    return result;
+  }
+
   /** 회원생성 */
   async createUser(
     input: CreateUserInput, //
@@ -85,5 +109,39 @@ export class UserService {
     });
 
     return user;
+  }
+
+  /** 회원정보 수정 */
+  async updateUser(
+    id: string,
+    input: UpdateUserInput, //
+  ) {
+    if (input.password) {
+      input.password = await bcrypt.hash(input.password, 10);
+    }
+    const result = await this.userRepository.update(id, input);
+
+    return result.affected ? true : false;
+  }
+
+  /** 회원 삭제 */
+  async deleteUser(
+    id: string,
+    pwd: string, //
+    input: DeleteUserInput,
+  ) {
+    const user = await this.userRepository.findOne({
+      where: { id: id },
+    });
+
+    const isAuthenticated = await bcrypt.compare(input.password, user.password);
+    const isAuthenticated2 = await bcrypt.compare(pwd, user.password);
+
+    if (!isAuthenticated && !isAuthenticated2) {
+      throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
+    }
+
+    const result = await this.userRepository.softDelete(id);
+    return result.affected ? true : false;
   }
 }

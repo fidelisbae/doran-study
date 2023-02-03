@@ -4,8 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UserModule } from '../users/user.module';
 import { UserEntity } from '../users/entities/user.entity';
-
 import { JwtAccessStrategy } from 'src/commons/auth/jwt-access.strategy';
+import { JwtRefreshStrategy } from 'src/commons/auth/jwt-refresh.strategy';
 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -21,6 +21,7 @@ import { AuthController } from './auth.controller';
   providers: [
     AuthService, //
     JwtAccessStrategy,
+    JwtRefreshStrategy,
   ],
   controllers: [
     AuthController, //
@@ -28,6 +29,7 @@ import { AuthController } from './auth.controller';
   exports: [
     AuthService, //
     JwtAccessStrategy,
+    JwtRefreshStrategy,
   ],
 })
 export class AuthModule {}
