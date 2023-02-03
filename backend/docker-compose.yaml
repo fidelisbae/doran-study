@@ -1,25 +1,23 @@
 version: '3.7'
 
 services:
-  # MySQL
-  mysql2:
+  ds_mysql:
     build:
       context: .
       dockerfile: mysql.Dockerfile
-    container_name: mysql2
+    container_name: ds_mysql
     environment:
       MYSQL_DATABASE: 'doran'
       MYSQL_ROOT_PASSWORD: '1234'
     volumes:
       - ./db/my.conf:/etc/mysql/my.conf
     ports:
-      - 23306:3306
+      - 33306:3306
     restart: always
 
-  # Redis
-  redis:
+  ds_redis:
     image: redis:latest
     container_name: ds_redis
     ports:
-      - 6379:6379
+      - 36379:6379
     restart: always
