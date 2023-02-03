@@ -2,10 +2,10 @@ import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConflictException, UnauthorizedException } from '@nestjs/common';
 
 import { UserEntity } from '../entities/user.entity';
 import { UserService } from '../user.service';
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
