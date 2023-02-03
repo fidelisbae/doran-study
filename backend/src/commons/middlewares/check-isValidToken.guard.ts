@@ -16,7 +16,6 @@ export class CheckIsValidToken implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
-    console.log('req', req['headers'].authorization);
     const accessToken = req['headers'].authorization.replace('Bearer ', '');
     const bl_accessToken = await this.access_token_pool.get(accessToken);
 
