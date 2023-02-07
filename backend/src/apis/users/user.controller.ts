@@ -17,6 +17,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
+import { ERROR } from 'src/commons/utils/error.enum';
 import { CheckIsValidToken } from 'src/commons/middlewares/check-isValidToken.guard';
 
 import { UserService } from './user.service';
@@ -91,13 +92,15 @@ export class UserController {
     const bl_accessToken = await this.access_token_pool.get(accessToken);
 
     if (bl_accessToken) {
-      throw new ConflictException('로그인을 먼저 해주세요.');
+      throw new ConflictException(ERROR.CAN_NOT_LOGOUT);
     }
 
     const user = await this.userService.isValidUser(req['user'].id);
     const isBool = await this.userService.updateUser(user.id, input);
     const result =
-      isBool === true ? '수정이 완료되었습니다.' : '수정에 실패했습니다.';
+      isBool === true
+        ? ERROR.USER_UPDATE_INFO_SUCCEED
+        : ERROR.USER_UPDATE_INFO_FAILED;
 
     return res.status(HttpStatus.OK).json(result);
   }
@@ -122,7 +125,7 @@ export class UserController {
     const bl_accessToken = await this.access_token_pool.get(accessToken);
 
     if (bl_accessToken) {
-      throw new ConflictException('로그인을 먼저 해주세요.');
+      throw new ConflictException(ERROR.REQUIRED_LOGIN);
     }
 
     const user = await this.userService.isValidUser(req['user'].id);
@@ -134,8 +137,8 @@ export class UserController {
 
     const result =
       isBool === true
-        ? '회원 탈퇴되었습니다. 이용해주셔서 감사합니다.'
-        : '실패했습니다. 다시 시도해주세요.';
+        ? ERROR.SUCCEED_DELETED_ACCOUNT
+        : ERROR.FAILED_DELETED_ACCOUNT;
 
     return res.status(HttpStatus.OK).json(result);
   }
