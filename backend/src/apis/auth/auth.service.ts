@@ -3,6 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import { ConflictException, Injectable } from '@nestjs/common';
 
+import { ERROR } from 'src/commons/utils/error.enum';
+
 import { UserEntity } from '../users/entities/user.entity';
 import { UserService } from '../users/user.service';
 
@@ -29,7 +31,7 @@ export class AuthService {
     const user = await this.userService.isValidUser(userID);
 
     if (!user) {
-      throw new ConflictException('존재하지 않는 회원입니다.');
+      throw new ConflictException(ERROR.NOT_EXIST_USER);
     } else {
       result = true;
     }
@@ -42,14 +44,14 @@ export class AuthService {
     );
 
     if (isAccessToken && isRefreshToken) {
-      throw new ConflictException('이미 로그아웃 처리가 되었습니다.');
+      throw new ConflictException(ERROR.CAN_NOT_LOGOUT);
     }
 
     await this.access_token_pool.set(
       accessToken.replace('Bearer ', ''),
       userID,
       'EX',
-      30,
+      3600,
     );
 
     await this.refresh_token_pool.set(
@@ -60,8 +62,8 @@ export class AuthService {
     );
 
     return result === true
-      ? '로그아웃 되었습니다.'
-      : '로그아웃을 할 수 없습니다.';
+      ? ERROR.SESSION_SUCCESS_PASSED
+      : ERROR.SESSION_DESTROY_FAILED;
   }
 
   /** AccessToken 발급 */
