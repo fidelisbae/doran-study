@@ -7,6 +7,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
+import { ERROR } from '../utils/error.enum';
+
 @Injectable()
 export class CheckIsValidToken implements CanActivate {
   constructor(
@@ -20,7 +22,7 @@ export class CheckIsValidToken implements CanActivate {
     const bl_accessToken = await this.access_token_pool.get(accessToken);
 
     if (bl_accessToken) {
-      throw new UnauthorizedException('로그인이 필요합니다.');
+      throw new UnauthorizedException(ERROR.REQUIRED_LOGIN);
     }
 
     return true;
