@@ -18,6 +18,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
+import { ERROR } from 'src/commons/utils/error.enum';
 import { UserService } from '../users/user.service';
 
 import { AuthInput } from './dto/login.input';
@@ -48,9 +49,7 @@ export class AuthController {
     const isAuthenticated = await bcrypt.compare(input.password, user.password);
 
     if (!isAuthenticated) {
-      throw new UnauthorizedException(
-        '비밀번호가 일치하지 않으므로 로그인할 수 없습니다.',
-      );
+      throw new UnauthorizedException(ERROR.INVALID_USER_PASSWORD);
     }
 
     this.authService.setRefreshToken(user, res);
@@ -79,9 +78,9 @@ export class AuthController {
       header.authorization,
       header.cookie,
     );
-    return result === '로그아웃 되었습니다.'
-      ? res.status(201).json(result)
-      : res.status(404).json(result);
+    return result === ERROR.SESSION_SUCCESS_PASSED
+      ? res.status(201).json(ERROR.SESSION_SUCCESS_PASSED)
+      : res.status(404).json(ERROR.SESSION_DESTROY_FAILED);
   }
 
   // ////////////////////////////////////////////////////////////
