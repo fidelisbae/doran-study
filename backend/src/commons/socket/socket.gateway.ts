@@ -1,4 +1,8 @@
-import { Logger } from '@nestjs/common';
+import Redis from 'ioredis';
+import { JwtService } from '@nestjs/jwt';
+import { Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { InjectRedis } from '@liaoliaots/nestjs-redis';
+import { Server, Socket } from 'socket.io';
 import {
   ConnectedSocket,
   MessageBody,
@@ -8,14 +12,21 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Namespace, Server, Socket } from 'socket.io';
+import { AuthGuard } from '@nestjs/passport';
 
 @WebSocketGateway({ transports: ['websocket'] })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  constructor() {}
+  constructor(
+    private readonly jwtService: JwtService,
+
+    @InjectRedis('rooms')
+    private readonly redis_rooms: Redis,
+
+    @InjectRedis('socket_room')
+    private readonly redis_socket_room: Redis,
+  ) {}
 
   rooms: string[] = [];
-
   private logger: Logger = new Logger('SocketGateway');
 
   @WebSocketServer()
@@ -25,8 +36,18 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`웹소켓 서버 초기화 ✅️`);
   }
 
-  handleConnection(socket: Socket) {
-    this.logger.log(`🔵️ Client Connected : ${socket.id} 🔵️`);
+  handleConnection(
+    socket: Socket, //
+  ) {
+    const token = socket.handshake.query.accessToken as string;
+
+    try {
+      this.logger.log(`🔵️ Client Connected : ${socket.id} 🔵️`);
+      return this.jwtService.verify(token, { secret: 'accessKey' });
+    } catch (e) {
+      this.logger.log(`❌️ Client Disconnected : ${socket.id} ❌️`);
+      throw new UnauthorizedException();
+    }
   }
   handleDisconnect(socket: Socket) {
     this.logger.log(`❌️ Client Disconnected : ${socket.id} ❌️`);
@@ -37,7 +58,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket,
     @MessageBody() roomName: string,
   ) {
-    if (this.rooms.includes(roomName)) {
+    console.log(socket);
+    const isRoomExists = await this.redis_rooms.exists(roomName);
+    if (isRoomExists) {
       return {
         success: false,
         payload: `${roomName} 방이 이미 존재합니다.`,
@@ -45,7 +68,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     socket.join(roomName);
-    this.rooms.push(roomName);
+    this.redis_rooms.set(roomName, 'userID');
     this.server.emit('createRoom', roomName);
     this.logger.log(`Room ${roomName} created`);
     return { success: true, payload: roomName };
@@ -56,6 +79,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket,
     @MessageBody() roomName: string,
   ) {
+    let loginUser;
+    if (loginUser === undefined) {
+      socket.emit('joinRoom Error');
+    }
     if (!this.rooms.includes(roomName)) {
       return {
         success: false,
