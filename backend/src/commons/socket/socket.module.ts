@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+
 import { SocketGateway } from './socket.gateway';
 
 @Module({
-  imports: [], //
+  imports: [JwtModule.register({})], //
   providers: [SocketGateway],
   exports: [SocketGateway],
 })
