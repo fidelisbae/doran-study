@@ -43,6 +43,18 @@ import { SocketModule } from './commons/socket/socket.module';
           db: 2,
           port: 6379,
         },
+        {
+          host: 'localhost',
+          namespace: 'socket_room',
+          db: 3,
+          port: 6379,
+        },
+        {
+          host: 'localhost',
+          namespace: 'rooms',
+          db: 4,
+          port: 6379,
+        },
       ],
     }),
 
