@@ -7,6 +7,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
+import { ERROR } from 'src/commons/utils/error.enum';
+
 import { UserEntity } from './entities/user.entity';
 import { CreateUserInput } from './dto/createUser.input';
 import { UpdateUserInput } from './dto/updateUser.input';
@@ -31,7 +33,7 @@ export class UserService {
     });
 
     if (!user) {
-      throw new ConflictException('일치하는 id가 없습니다.');
+      throw new ConflictException(ERROR.INVALID_USER_ID);
     }
     return user;
   }
@@ -45,9 +47,7 @@ export class UserService {
         pwd,
       );
     if (!checkPassword) {
-      throw new ConflictException(
-        '유효한 비밀번호가 아닙니다. 양식에 맞춰 다시 입력해주세요.',
-      );
+      throw new ConflictException(ERROR.NOT_A_PASSWORD_FORM);
     }
 
     return checkPassword;
@@ -66,7 +66,7 @@ export class UserService {
     });
 
     if (user.length !== 0) {
-      throw new ConflictException('이미 있는 아이디 혹은 닉네임 입니다.');
+      throw new ConflictException(ERROR.ALREADY_EXIST_USER);
     }
 
     return user;
@@ -83,9 +83,7 @@ export class UserService {
     });
 
     if (result === undefined) {
-      throw new ConflictException(
-        '일치하는 정보가 없습니다. 다시 입력해주세요.',
-      );
+      throw new ConflictException(ERROR.INVALID_USER_INFO);
     }
 
     return result;
@@ -133,7 +131,7 @@ export class UserService {
     const isAuthenticated2 = await bcrypt.compare(pwd, user.password);
 
     if (!isAuthenticated && !isAuthenticated2) {
-      throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
+      throw new UnauthorizedException(ERROR.INVALID_USER_PASSWORD);
     }
 
     const result = await this.userRepository.softDelete(id);
