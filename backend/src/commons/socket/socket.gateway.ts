@@ -19,6 +19,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly jwtService: JwtService,
 
+    @InjectRedis('access_token')
+    private readonly access_token_pool: Redis,
+
     @InjectRedis('rooms')
     private readonly redis_rooms: Redis,
 
@@ -36,17 +39,22 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`웹소켓 서버 초기화 ✅️`);
   }
 
-  handleConnection(
+  async handleConnection(
     socket: Socket, //
   ) {
     const token = socket.handshake.query.accessToken as string;
 
     try {
+      const isAccessToken = await this.access_token_pool.get(token);
+
+      if (isAccessToken) {
+        throw new UnauthorizedException();
+      }
       this.logger.log(`🔵️ Client Connected : ${socket.id} 🔵️`);
-      return this.jwtService.verify(token, { secret: 'accessKey' });
     } catch (e) {
-      this.logger.log(`❌️ Client Disconnected : ${socket.id} ❌️`);
-      throw new UnauthorizedException();
+      this.logger.log(
+        `❌️ UnauthorizedException. Can't Connect : ${socket.id} ❌️`,
+      );
     }
   }
   handleDisconnect(socket: Socket) {
