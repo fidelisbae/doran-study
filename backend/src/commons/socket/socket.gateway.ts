@@ -150,4 +150,26 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     return { success: true };
   }
+
+  @SubscribeMessage('kickOutUser')
+  async kickOutUser(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() targetUserID: string,
+  ) {
+    const token = socket.handshake.query.accessToken as string;
+    const user = await this.jwtService.verifyAsync(token, {
+      secret: 'accessKey',
+    });
+    const isHost = await this.redis_socket_room.get(user.id);
+
+    if (!isHost) {
+      socket.emit('kicOutUser Error', {
+        message: ERROR.DO_NOT_HAVE_PERMISSION,
+      });
+      return {
+        success: false,
+        payload: '방장만 강퇴할 수 있습니다.',
+      };
+    }
+  }
 }
