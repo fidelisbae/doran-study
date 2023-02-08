@@ -31,4 +31,7 @@ export const ERROR = Object.freeze({
 
   ///////////////////////////////////////////////////////////////////
   // socket //
+  CAN_NOT_CREATED_ROOM: { status: 500, message: '방 생성에 실패했습니다.' },
+  DOES_NOT_EXIST_ROOM: { status: 400, message: '존재하지 않는 방입니다.' },
+  CAN_NOT_ENTER_ROOM: { status: 500, message: '방 입장에 실패했습니다.' },
 });
