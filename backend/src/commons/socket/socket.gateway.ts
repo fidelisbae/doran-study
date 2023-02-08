@@ -1,8 +1,8 @@
 import Redis from 'ioredis';
 import { JwtService } from '@nestjs/jwt';
-import { Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import { Server, Socket } from 'socket.io';
+import { Logger, UnauthorizedException } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -12,7 +12,8 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { AuthGuard } from '@nestjs/passport';
+
+import { ERROR } from '../utils/error.enum';
 
 @WebSocketGateway({ transports: ['websocket'] })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -28,12 +29,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @InjectRedis('socket_room')
     private readonly redis_socket_room: Redis,
   ) {}
-
-  rooms: string[] = [];
   private logger: Logger = new Logger('SocketGateway');
 
   @WebSocketServer()
-  server: Server;
+  io: Server;
 
   afterInit() {
     this.logger.log(`웹소켓 서버 초기화 ✅️`);
@@ -66,20 +65,31 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket,
     @MessageBody() roomName: string,
   ) {
-    console.log(socket);
-    const isRoomExists = await this.redis_rooms.exists(roomName);
+    const room = JSON.parse(roomName).roomName;
+    const token = socket.handshake.query.accessToken as string;
+    const user = await this.jwtService.verifyAsync(token, {
+      secret: 'accessKey',
+    });
+
+    const isRoomExists = await this.redis_rooms.exists(room);
     if (isRoomExists) {
       return {
         success: false,
-        payload: `${roomName} 방이 이미 존재합니다.`,
+        payload: `${room} 방이 이미 존재합니다.`,
       };
     }
 
-    socket.join(roomName);
-    this.redis_rooms.set(roomName, 'userID');
-    this.server.emit('createRoom', roomName);
-    this.logger.log(`Room ${roomName} created`);
-    return { success: true, payload: roomName };
+    try {
+      socket.join(room);
+      this.redis_rooms.set(room, user.id); // 채팅방 리스트 저장
+      this.redis_socket_room.set(user.id, room); // 채팅방의 호스트 기록
+      this.logger.log(`Room ${room} created`);
+      socket.emit('✅️ createRoom ✅️ :', room);
+      return { success: true, payload: room };
+    } catch (e) {
+      this.logger.log(`❌️ createRoom Error ❌️`, e);
+      socket.emit('createRoom Error', ERROR.CAN_NOT_CREATED_ROOM);
+    }
   }
 
   @SubscribeMessage('joinRoom')
@@ -87,23 +97,31 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket,
     @MessageBody() roomName: string,
   ) {
-    let loginUser;
-    if (loginUser === undefined) {
-      socket.emit('joinRoom Error');
-    }
-    if (!this.rooms.includes(roomName)) {
+    const room = JSON.parse(roomName).roomName;
+    const token = socket.handshake.query.accessToken as string;
+    const user = await this.jwtService.verifyAsync(token, {
+      secret: 'accessKey',
+    });
+    const existRoom = await this.redis_rooms.get(room);
+
+    if (!existRoom) {
       return {
         success: false,
-        payload: `${roomName} 방이 존재하지 않습니다. 방이름을 확인해주세요.`,
+        payload: `${room} 방이 존재하지 않습니다. 방이름을 확인해주세요.`,
       };
     }
 
-    socket.join(roomName);
-    socket.broadcast
-      .to(roomName)
-      .emit('message', { message: `${socket.id}가 입장했습니다.` });
-
-    return { success: true };
+    try {
+      socket.join(room);
+      socket.broadcast
+        .to(room)
+        .emit('message', { message: `${user.nickName}가 입장했습니다.` });
+      this.io.to(user.id).emit(user.id, user.nickName);
+      return { success: true };
+    } catch (e) {
+      this.logger.log(`❌️ joinRoom Error ❌️`, e);
+      socket.emit('joinRoom Error', ERROR.CAN_NOT_ENTER_ROOM);
+    }
   }
 
   @SubscribeMessage('leaveRoom')
@@ -111,20 +129,25 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket,
     @MessageBody() roomName: string,
   ) {
+    const room = JSON.parse(roomName).roomName;
+    const token = socket.handshake.query.accessToken as string;
+    const user = await this.jwtService.verifyAsync(token, {
+      secret: 'accessKey',
+    });
+    const existRoom = await this.redis_rooms.get(room);
+
+    if (!existRoom) {
+      return {
+        success: false,
+        payload: `${room}을 나갈 수 없습니다. 다시 시도해주세요.`,
+      };
+    }
+
     socket.leave(roomName);
     socket.broadcast
       .to(roomName)
       .emit('message', { message: `${socket.id}가 나갔습니다.` });
 
     return { success: true };
-  }
-
-  @SubscribeMessage('message')
-  async handleMessage(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody() message: string, //
-  ) {
-    socket.broadcast.emit('message', { username: socket.id, message });
-    return { username: socket.id, message };
   }
 }
