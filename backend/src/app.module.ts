@@ -5,8 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 
-import { UserModule } from './apis/users/user.module';
+import { ChatModule } from './apis/chat/chat.module';
 import { AuthModule } from './apis/auth/auth.module';
+import { UserModule } from './apis/users/user.module';
 import { SocketModule } from './commons/socket/socket.module';
 
 @Module({
@@ -59,8 +60,9 @@ import { SocketModule } from './commons/socket/socket.module';
     }),
 
     // Modules
-    UserModule,
     AuthModule,
+    ChatModule,
+    UserModule,
     SocketModule,
   ],
   controllers: [AppController],
