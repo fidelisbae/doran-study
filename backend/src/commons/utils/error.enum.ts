@@ -35,4 +35,9 @@ export const ERROR = Object.freeze({
   DOES_NOT_EXIST_ROOM: { status: 400, message: '존재하지 않는 방입니다.' },
   CAN_NOT_ENTER_ROOM: { status: 500, message: '방 입장에 실패했습니다.' },
   DO_NOT_HAVE_PERMISSION: { status: 400, message: '권한이 없습니다.' },
+
+  ///////////////////////////////////////////////////////////////////
+  // chat //
+  // prettier-ignore
+  CAN_NOT_FIND_CHAT: { status: 400, message: '조건에 일치하는 방을 찾을 수 없습니다.' },
 });
