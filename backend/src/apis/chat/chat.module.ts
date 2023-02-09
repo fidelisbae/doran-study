@@ -3,16 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ChatEntity } from './entities/chat.entity';
 import { ChatService } from './chat.service';
-import { ChatController } from './chat.controller';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       ChatEntity, //
     ]),
-  ],
-  controllers: [
-    ChatController, //
   ],
   providers: [
     ChatService, //
