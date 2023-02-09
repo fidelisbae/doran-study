@@ -14,20 +14,22 @@ import {
 } from '@nestjs/websockets';
 
 import { ERROR } from '../utils/error.enum';
+import { ChatService } from 'src/apis/chat/chat.service';
+
+import { KickUserDto } from './dto/socket.dto';
 
 @WebSocketGateway({ transports: ['websocket'] })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly jwtService: JwtService,
+    private readonly chatService: ChatService,
 
     @InjectRedis('access_token')
     private readonly access_token_pool: Redis,
 
+    // prettier-ignore
     @InjectRedis('rooms')
     private readonly redis_rooms: Redis,
-
-    @InjectRedis('socket_room')
-    private readonly redis_socket_room: Redis,
   ) {}
   private logger: Logger = new Logger('SocketGateway');
 
@@ -82,7 +84,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       socket.join(room);
       this.redis_rooms.set(room, user.id); // 채팅방 리스트 저장
-      this.redis_socket_room.set(user.id, room); // 채팅방의 호스트 기록
+      this.chatService.saveRoomInfo(user.id, room, user.id);
+
       this.logger.log(`Room ${room} created`);
       socket.emit('✅️ createRoom ✅️ :', room);
       return { success: true, payload: room };
@@ -97,12 +100,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket,
     @MessageBody() roomName: string,
   ) {
+    let memArr = [];
     const room = JSON.parse(roomName).roomName;
     const token = socket.handshake.query.accessToken as string;
     const user = await this.jwtService.verifyAsync(token, {
       secret: 'accessKey',
     });
     const existRoom = await this.redis_rooms.get(room);
+    const roomMembers = await this.chatService.getRoom(room);
 
     if (!existRoom) {
       return {
@@ -113,10 +118,16 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     try {
       socket.join(room);
+
+      memArr.push(...roomMembers.users, user.id);
+      this.chatService.updateRoomInfo(memArr, room, user.id);
+
       socket.broadcast
         .to(room)
         .emit('message', { message: `${user.nickName}가 입장했습니다.` });
+
       this.io.to(user.id).emit(user.id, user.nickName);
+
       return { success: true };
     } catch (e) {
       this.logger.log(`❌️ joinRoom Error ❌️`, e);
@@ -154,13 +165,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('kickOutUser')
   async kickOutUser(
     @ConnectedSocket() socket: Socket,
-    @MessageBody() targetUserID: string,
+    @MessageBody() input: KickUserDto,
   ) {
     const token = socket.handshake.query.accessToken as string;
     const user = await this.jwtService.verifyAsync(token, {
       secret: 'accessKey',
     });
-    const isHost = await this.redis_socket_room.get(user.id);
+    const isHost = await this.chatService.getHost(user.id, input.roomName);
 
     if (!isHost) {
       socket.emit('kicOutUser Error', {
