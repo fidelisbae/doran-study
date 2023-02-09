@@ -4,7 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { ERROR } from 'src/commons/utils/error.enum';
 
-import { ChatDTO } from './dto/chat.dto';
 import { ChatEntity } from './entities/chat.entity';
 
 @Injectable()
@@ -16,10 +15,11 @@ export class ChatService {
 
   /** 방장 조회 */
   async getHost(
-    input: ChatDTO, //
+    host: string,
+    roomName: string, //
   ) {
     const result = await this.chatRepository.findOne({
-      where: { host: input.host, roomName: input.roomName },
+      where: { host: host, roomName: roomName },
     });
 
     if (!result) {
