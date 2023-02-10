@@ -5,5 +5,5 @@ export class KickUserDto {
   roomName: string;
 
   @IsString()
-  targetUser: string;
+  targetUserID: string;
 }
