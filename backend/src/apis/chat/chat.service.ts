@@ -22,11 +22,22 @@ export class ChatService {
       where: { host: host, roomName: roomName },
     });
 
+    return result !== undefined ? result : undefined;
+  }
+
+  /** 유저 조회 */
+  async getUser(roomName: string) {
+    const result = await this.chatRepository
+      .createQueryBuilder('c')
+      .select('c.users')
+      .where('c.roomName = :roomName', { roomName: roomName })
+      .getOne();
+
     if (!result) {
-      throw new ConflictException(ERROR.CAN_NOT_FIND_CHAT);
+      throw new ConflictException(ERROR.NOT_EXIST_USER);
     }
 
-    return result;
+    return result !== undefined ? result : undefined;
   }
 
   /** 방 조회 */
@@ -42,6 +53,25 @@ export class ChatService {
     }
 
     return result;
+  }
+
+  /** 해당 방의 참가자 조회 */
+  async getRoomMembers(
+    roomName: string, //
+    targetUserID: string,
+  ) {
+    const result = await this.chatRepository.findOne({
+      select: ['users'],
+      where: { roomName: roomName },
+    });
+
+    if (!result) {
+      throw new ConflictException(ERROR.CAN_NOT_FIND_CHAT);
+    }
+
+    const isParticipant = result.users.includes(targetUserID);
+
+    return isParticipant ? true : false;
   }
 
   /** 방 생성 시 정보 저장 */
