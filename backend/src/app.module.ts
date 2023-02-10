@@ -56,6 +56,12 @@ import { SocketModule } from './commons/socket/socket.module';
           db: 4,
           port: 6379,
         },
+        {
+          host: 'localhost',
+          namespace: 'BannedUsers',
+          db: 5,
+          port: 6379,
+        },
       ],
     }),
 
