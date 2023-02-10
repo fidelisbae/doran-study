@@ -1,5 +1,11 @@
 {
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "cSpell.words": ["nestjs", "typeorm", "liaoliaots"]
+  "cSpell.words": [
+    "nestjs",
+    "typeorm",
+    "liaoliaots",
+    "accesstoken",
+    "websockets"
+  ]
 }
