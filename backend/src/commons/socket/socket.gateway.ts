@@ -14,6 +14,7 @@ import {
 } from '@nestjs/websockets';
 
 import { ERROR } from '../utils/error.enum';
+import { ChatInput } from 'src/apis/chat/dto/chat.dto';
 import { ChatService } from 'src/apis/chat/chat.service';
 
 import { KickUserDto } from './dto/socket.dto';
@@ -27,9 +28,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @InjectRedis('access_token')
     private readonly access_token_pool: Redis,
 
-    // prettier-ignore
     @InjectRedis('rooms')
     private readonly redis_rooms: Redis,
+
+    @InjectRedis('BannedUsers')
+    private readonly redis_banned_users: Redis,
   ) {}
   private logger: Logger = new Logger('SocketGateway');
 
@@ -43,7 +46,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(
     socket: Socket, //
   ) {
-    const token = socket.handshake.query.accessToken as string;
+    const token = socket.handshake.headers.accesstoken as string;
 
     try {
       const isAccessToken = await this.access_token_pool.get(token);
@@ -62,47 +65,58 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`❌️ Client Disconnected : ${socket.id} ❌️`);
   }
 
+  /** 방 생성하기 */
   @SubscribeMessage('createRoom')
   async createRoom(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody() roomName: string,
+    @ConnectedSocket() socket: Socket, //
+    @MessageBody() input: any,
   ) {
-    const room = JSON.parse(roomName).roomName;
-    const token = socket.handshake.query.accessToken as string;
+    console.log('socketID', socket.id);
+    const room = input['roomName'];
+    const token = socket.handshake.headers.accesstoken as string;
+    console.log(socket.handshake.headers);
     const user = await this.jwtService.verifyAsync(token, {
       secret: 'accessKey',
     });
 
     const isRoomExists = await this.redis_rooms.exists(room);
     if (isRoomExists) {
-      return {
-        success: false,
-        payload: `${room} 방이 이미 존재합니다.`,
-      };
+      this.logger.log(`❌️ Room already exists ❌️`);
+      this.io.to(socket.id).emit('createRoom_Error', {
+        isSuccess: false,
+        message: ERROR.ROOM_ALREADY_EXISTS,
+        roomName: room,
+      });
+
+      return;
     }
 
     try {
       socket.join(room);
-      this.redis_rooms.set(room, user.id); // 채팅방 리스트 저장
+      this.redis_rooms.set(room, user.id);
       this.chatService.saveRoomInfo(user.id, room, user.id);
-
-      this.logger.log(`Room ${room} created`);
-      socket.emit('✅️ createRoom ✅️ :', room);
-      return { success: true, payload: room };
+      this.logger.log(`🚪 Room ${room} has been created.`);
+      socket.emit('created-Room', {
+        isSuccess: true,
+        message: ERROR.SUCCESS_CREATED_ROOM,
+        roomName: room,
+      });
+      this.io.emit('Success', `🚪 Room ${room} has been created.`);
     } catch (e) {
-      this.logger.log(`❌️ createRoom Error ❌️`, e);
-      socket.emit('createRoom Error', ERROR.CAN_NOT_CREATED_ROOM);
+      this.logger.log(`❌️ CreateRoom: ${e} ❌️`);
+      socket.emit('createRoom_Error', ERROR.CAN_NOT_CREATED_ROOM);
     }
   }
 
+  /** 방 참여 하기 */
   @SubscribeMessage('joinRoom')
   async joinRoom(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody() roomName: string,
+    @ConnectedSocket() socket: Socket, //
+    @MessageBody() input: any,
   ) {
     let memArr = [];
-    const room = JSON.parse(roomName).roomName;
-    const token = socket.handshake.query.accessToken as string;
+    const room = input['roomName'];
+    const token = socket.handshake.headers.accesstoken as string;
     const user = await this.jwtService.verifyAsync(token, {
       secret: 'accessKey',
     });
@@ -110,10 +124,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const roomMembers = await this.chatService.getRoom(room);
 
     if (!existRoom) {
-      return {
-        success: false,
-        payload: `${room} 방이 존재하지 않습니다. 방이름을 확인해주세요.`,
-      };
+      this.logger.log(`❌️ Room does not exist ❌️`);
+      this.io.to(socket.id).emit('joinRoom_Error', {
+        isSuccess: false,
+        message: ERROR.DOES_NOT_EXIST_ROOM,
+        roomName: room,
+      });
+
+      return;
     }
 
     try {
@@ -125,49 +143,94 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       socket.broadcast
         .to(room)
         .emit('message', { message: `${user.nickName}가 입장했습니다.` });
-
-      this.io.to(user.id).emit(user.id, user.nickName);
-
-      return { success: true };
+      this.io.to(socket.id).emit('Success', {
+        isSuccess: true,
+        message: ERROR.SUCCESS_JOIN_ROOM,
+        roomName: room,
+      });
     } catch (e) {
-      this.logger.log(`❌️ joinRoom Error ❌️`, e);
-      socket.emit('joinRoom Error', ERROR.CAN_NOT_ENTER_ROOM);
+      this.logger.log(`❌️ JoinRoom: ${e} ❌️`);
+      socket.emit('joinRoom_Error', ERROR.CAN_NOT_ENTER_ROOM);
     }
   }
 
   @SubscribeMessage('leaveRoom')
   async leaveRoom(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody() roomName: string,
+    @ConnectedSocket() socket: Socket, //
+    @MessageBody() input: any,
   ) {
-    const room = JSON.parse(roomName).roomName;
-    const token = socket.handshake.query.accessToken as string;
+    const room = input['roomName'];
+    const token = socket.handshake.headers.accesstoken as string;
     const user = await this.jwtService.verifyAsync(token, {
       secret: 'accessKey',
     });
     const existRoom = await this.redis_rooms.get(room);
 
     if (!existRoom) {
-      return {
-        success: false,
-        payload: `${room}을 나갈 수 없습니다. 다시 시도해주세요.`,
-      };
+      this.logger.log(`❌️ Room does not exist ❌️`);
+      this.io.to(socket.id).emit('joinRoom_Error', {
+        isSuccess: false,
+        message: ERROR.DOES_NOT_EXIST_ROOM,
+        roomName: room,
+      });
+
+      return;
     }
 
-    socket.leave(roomName);
-    socket.broadcast
-      .to(roomName)
-      .emit('message', { message: `${socket.id}가 나갔습니다.` });
-
-    return { success: true };
+    const isHost = await this.chatService.getHost(user.id, room);
+    try {
+      if (!isHost) {
+        socket.leave(room);
+        socket.broadcast
+          .to(room)
+          .emit('message', { message: `${user.nickName}이/가 나갔습니다.` });
+        this.logger.log(`🚪 ${user.nickName}(${socket.id}) left room ${room}`);
+      } else {
+        socket.leave(room);
+        socket.broadcast.to(room).emit('message', {
+          message: '방장이 방을 나가 방이 삭제되었습니다.',
+        });
+        this.redis_rooms.del(room);
+        this.logger.log(`The room "${room}" ${socket.id} has been deleted.`);
+      }
+    } catch (e) {
+      this.logger.log(`❌️ LeaveRoom: ${e} ❌️`);
+      socket.emit('leaveRoom_Error', ERROR.FAILED);
+    }
   }
 
+  /** 메세지 보내기 */
+  @SubscribeMessage('message')
+  async sendMessage(
+    @ConnectedSocket() socket: Socket, //
+    @MessageBody() input: ChatInput,
+  ) {
+    const room = input['roomName'];
+    const token = socket.handshake.headers.accesstoken as string;
+    const user = await this.jwtService.verifyAsync(token, {
+      secret: 'accessKey',
+    });
+
+    try {
+      this.io.to(room).emit('receiveMessage', {
+        id: socket.id,
+        nickName: user.nickName,
+        message: input.contents,
+      });
+    } catch (e) {
+      this.logger.log(`❌️ SendMessage: ${e} ❌️`);
+      socket.emit('sendMessage_Error', ERROR.FAILED);
+    }
+  }
+
+  /** 유저 강퇴하기 */
   @SubscribeMessage('kickOutUser')
   async kickOutUser(
     @ConnectedSocket() socket: Socket,
     @MessageBody() input: KickUserDto,
   ) {
-    const token = socket.handshake.query.accessToken as string;
+    const room = input['roomName'];
+    const token = socket.handshake.headers.accesstoken as string;
     const user = await this.jwtService.verifyAsync(token, {
       secret: 'accessKey',
     });
@@ -175,12 +238,43 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (!isHost) {
       socket.emit('kicOutUser Error', {
+        isSuccess: false,
         message: ERROR.DO_NOT_HAVE_PERMISSION,
       });
-      return {
-        success: false,
-        payload: '방장만 강퇴할 수 있습니다.',
-      };
+
+      return;
+    }
+
+    const isExistUser = await this.chatService.getUser(room);
+    const targetUser = await this.chatService.getRoomMembers(
+      room,
+      input.targetUserID,
+    );
+
+    if (!targetUser) {
+      socket.emit('kicOutUser Error', {
+        isSuccess: false,
+        message: ERROR.DOES_NOT_EXIST_USER,
+        roomName: room,
+      });
+      return;
+    }
+
+    const userList = isExistUser.users.filter(
+      (element) => element !== input.targetUserID,
+    );
+
+    try {
+      await this.chatService.updateRoomInfo(userList, room);
+      this.io.to(room).emit('message', {
+        message: `${input.targetUserID}이/가 강퇴되었습니다.`,
+      });
+      this.logger.log(
+        `${input.targetUserID} is kicked out of the room ${room}`,
+      );
+    } catch (e) {
+      this.logger.log(`❌️ KickOutUser: ${e} ❌️`);
+      socket.emit('kickOutUser', ERROR.FAILED);
     }
   }
 }
