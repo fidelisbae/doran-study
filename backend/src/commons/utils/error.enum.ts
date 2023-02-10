@@ -1,5 +1,9 @@
 export const ERROR = Object.freeze({
   ///////////////////////////////////////////////////////////////////
+  // default //
+  FAILED: { status: 500, message: '실패했습니다.' },
+
+  ///////////////////////////////////////////////////////////////////
   // user //
   // prettier-ignore
   USER_UPDATE_INFO_SUCCEED: { status: 201, message: '정보 수정이 완료되었습니다.' },
@@ -31,13 +35,18 @@ export const ERROR = Object.freeze({
 
   ///////////////////////////////////////////////////////////////////
   // socket //
+  SUCCESS_CREATED_ROOM: { status: 201, message: '방 생성에 성공했습니다.' },
   CAN_NOT_CREATED_ROOM: { status: 500, message: '방 생성에 실패했습니다.' },
   DOES_NOT_EXIST_ROOM: { status: 400, message: '존재하지 않는 방입니다.' },
   CAN_NOT_ENTER_ROOM: { status: 500, message: '방 입장에 실패했습니다.' },
+  SUCCESS_JOIN_ROOM: { status: 201, message: '방에 입장했습니다.' },
   DO_NOT_HAVE_PERMISSION: { status: 400, message: '권한이 없습니다.' },
+  ROOM_ALREADY_EXISTS: { status: 400, message: '이미 존재하는 방입니다.' },
 
   ///////////////////////////////////////////////////////////////////
   // chat //
   // prettier-ignore
   CAN_NOT_FIND_CHAT: { status: 400, message: '조건에 일치하는 방을 찾을 수 없습니다.' },
+  // prettier-ignore
+  DOES_NOT_EXIST_USER: { status: 400, message: '해당 방에 존재하지 않는 사용자입니다.' },
 });
