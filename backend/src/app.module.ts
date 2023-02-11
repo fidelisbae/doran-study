@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppService } from './app.service';
@@ -13,14 +14,21 @@ import { SocketModule } from './commons/socket/socket.module';
 @Module({
   imports: [
     ///////////////////////////////////////////////////////////////////////////
+    // Environment Config //
+    ConfigModule.forRoot({
+      envFilePath: '.env',
+      isGlobal: true,
+    }),
+
+    ///////////////////////////////////////////////////////////////////////////
     // TypeORM //
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
-      port: 23306,
-      username: 'root',
-      password: '1234',
-      database: 'doran',
+      host: `${process.env.MYSQL_HOST}`,
+      port: Number(process.env.MYSQL_DOCKER_PORT),
+      username: process.env.MYSQL_USER_NAME,
+      password: process.env.MYSQL_ROOT_PASSWORD,
+      database: process.env.MYSQL_DATABASE,
       entities: [
         __dirname + '/apis/**/*.entity.*', //
       ],
@@ -36,31 +44,31 @@ import { SocketModule } from './commons/socket/socket.module';
           host: 'localhost',
           namespace: 'access_token',
           db: 1,
-          port: 6379,
+          port: 26379,
         },
         {
           host: 'localhost',
           namespace: 'refresh_token',
           db: 2,
-          port: 6379,
+          port: 26379,
         },
         {
           host: 'localhost',
           namespace: 'socket_room',
           db: 3,
-          port: 6379,
+          port: 26379,
         },
         {
           host: 'localhost',
           namespace: 'rooms',
           db: 4,
-          port: 6379,
+          port: 26379,
         },
         {
           host: 'localhost',
           namespace: 'BannedUsers',
           db: 5,
-          port: 6379,
+          port: 26379,
         },
       ],
     }),
