@@ -41,7 +41,7 @@ export class UserController {
   @ApiOperation({
     summary: '회원 정보 조회',
   })
-  @Get('/info')
+  @Get('/getUserInfo')
   async getUser(
     @Req() req: Express.Request,
     @Res() res: Response, //
@@ -58,7 +58,7 @@ export class UserController {
   @ApiBody({
     type: CreateUserInput, //
   })
-  @Post('')
+  @Post('/create')
   async createUser(
     @Body() input: CreateUserInput, //
     @Res() res: Response,
@@ -82,7 +82,7 @@ export class UserController {
   @ApiBody({
     type: UpdateUserInput, //
   })
-  @Put('')
+  @Put('/update')
   async updateUser(
     @Body() input: UpdateUserInput, //
     @Req() req: Express.Request,
@@ -115,7 +115,7 @@ export class UserController {
   @ApiBody({
     type: DeleteUserInput, //
   })
-  @Delete('')
+  @Delete('/delete')
   async deleteUser(
     @Body() input: DeleteUserInput, //
     @Req() req: Express.Request,
