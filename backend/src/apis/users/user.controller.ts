@@ -58,7 +58,7 @@ export class UserController {
   @ApiBody({
     type: CreateUserInput, //
   })
-  @Post('/create')
+  @Post('/')
   async createUser(
     @Body() input: CreateUserInput, //
     @Res() res: Response,
@@ -82,7 +82,7 @@ export class UserController {
   @ApiBody({
     type: UpdateUserInput, //
   })
-  @Put('/update')
+  @Put('/')
   async updateUser(
     @Body() input: UpdateUserInput, //
     @Req() req: Express.Request,
@@ -115,7 +115,7 @@ export class UserController {
   @ApiBody({
     type: DeleteUserInput, //
   })
-  @Delete('/delete')
+  @Delete('/')
   async deleteUser(
     @Body() input: DeleteUserInput, //
     @Req() req: Express.Request,
