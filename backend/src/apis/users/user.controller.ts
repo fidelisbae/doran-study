@@ -41,7 +41,7 @@ export class UserController {
   @ApiOperation({
     summary: '회원 정보 조회',
   })
-  @Get('/getUserInfo')
+  @Get('/info')
   async getUser(
     @Req() req: Express.Request,
     @Res() res: Response, //
