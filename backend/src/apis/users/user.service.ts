@@ -58,6 +58,10 @@ export class UserService {
     id: string, //
     nickName?: string,
   ) {
+    if (id.length < 5 || nickName.length < 5) {
+      throw new ConflictException(ERROR.INVALID_FORM);
+    }
+
     const user = await this.userRepository.find({
       where: [
         { id }, //
@@ -109,7 +113,12 @@ export class UserService {
     id: string,
     input: UpdateUserInput, //
   ) {
+    if (input.nickName.length < 5) {
+      throw new ConflictException(ERROR.INVALID_FORM);
+    }
+
     if (input.password) {
+      await this.checkValidatePwd(input.password);
       input.password = await bcrypt.hash(input.password, 10);
     }
     const result = await this.userRepository.update(id, input);
