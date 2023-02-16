@@ -6,9 +6,11 @@ export const ERROR = Object.freeze({
   ///////////////////////////////////////////////////////////////////
   // user //
   // prettier-ignore
+  INVALID_FORM: { status: 400, message: '아이디와 닉네임은 5글자 이상이여야 합니다.' },
+  // prettier-ignore
   USER_UPDATE_INFO_SUCCEED: { status: 201, message: '정보 수정이 완료되었습니다.' },
   // prettier-ignore
-  USER_UPDATE_INFO_FAILED: { status: 201, message: '정부 수정이 실패되었습니다.' },
+  USER_UPDATE_INFO_FAILED: { status: 400, message: '정보 수정이 실패되었습니다.' },
   // prettier-ignore
   NOT_A_PASSWORD_FORM: {status: 400, message: '유효한 비밀번호 양식이 아닙니다.'},
   // prettier-ignore
@@ -18,7 +20,7 @@ export const ERROR = Object.freeze({
   // prettier-ignore
   INVALID_USER_PASSWORD: { status: 400, message: '사용자 PASSWORD 정보가 유효하지 않습니다.'},
   // prettier-ignore
-  INVALID_USER_INFO: {status: 400, message: '일치하는 정보가 없습니다. 다시 입력해주세요.'},
+  INVALID_USER_INFO: { status: 400, message: '일치하는 정보가 없습니다. 다시 입력해주세요.' },
 
   ///////////////////////////////////////////////////////////////////
   // auth //
