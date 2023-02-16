@@ -47,19 +47,7 @@ export class AuthService {
       throw new ConflictException(ERROR.CAN_NOT_LOGOUT);
     }
 
-    await this.access_token_pool.set(
-      accessToken.replace('Bearer ', ''),
-      userID,
-      'EX',
-      3600,
-    );
-
-    await this.refresh_token_pool.set(
-      refreshToken.replace('refreshToken=', ''),
-      userID,
-      'EX',
-      3600 * 24 * 14,
-    );
+    await this.setBlackList(userID, accessToken, refreshToken);
 
     return result === true
       ? ERROR.SESSION_SUCCESS_PASSED
@@ -87,5 +75,21 @@ export class AuthService {
       { secret: 'refreshToken', expiresIn: '2w' },
     );
     return res.setHeader('Set-Cookie', `refreshToken=${refreshToken}`);
+  }
+
+  /** 블랙리스트 등록하기 */
+  async setBlackList(
+    userID: string,
+    accessToken: string, //
+    refreshToken: string,
+  ) {
+    await this.access_token_pool.set(accessToken, userID, 'EX', 3600);
+
+    await this.refresh_token_pool.set(
+      refreshToken,
+      userID,
+      'EX',
+      3600 * 24 * 14,
+    );
   }
 }
