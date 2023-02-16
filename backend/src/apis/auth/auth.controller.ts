@@ -84,10 +84,13 @@ export class AuthController {
   }
 
   // ////////////////////////////////////////////////////////////
-  // accessToken 재발급
+  /** accessToken 재발급 */
   @ApiBearerAuth('access-token or refresh-token')
   @ApiUnauthorizedResponse({ description: 'Invalid Credential' })
   @UseGuards(AuthGuard('refreshToken'))
+  @ApiOperation({
+    summary: 'AccessToken 재발급하기',
+  })
   @Post('/restoreAccessToken')
   async restoreAccessToken(
     @Req() req: Express.Request, //
