@@ -4,7 +4,7 @@ import { IsOptional, IsString, MinLength } from 'class-validator';
 export class UpdateUserInput {
   @IsString()
   @IsOptional()
-  @MinLength(5, {
+  @MinLength(8, {
     message: 'Your password is too short! It must be 1 characters or more!',
   })
   @ApiProperty({
@@ -14,7 +14,7 @@ export class UpdateUserInput {
 
   @IsString()
   @IsOptional()
-  @MinLength(5, {
+  @MinLength(2, {
     message: 'Your nickname is too short! It must be 5 characters or more!',
   })
   @ApiProperty({

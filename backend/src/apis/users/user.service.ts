@@ -58,7 +58,7 @@ export class UserService {
     id: string, //
     nickName?: string,
   ) {
-    if (id.length < 5 || nickName.length < 5) {
+    if (id.length < 5 || nickName.length < 2) {
       throw new ConflictException(ERROR.INVALID_FORM);
     }
 
@@ -113,7 +113,7 @@ export class UserService {
     id: string,
     input: UpdateUserInput, //
   ) {
-    if (input.nickName.length < 5) {
+    if (input.nickName.length < 2) {
       throw new ConflictException(ERROR.INVALID_FORM);
     }
 

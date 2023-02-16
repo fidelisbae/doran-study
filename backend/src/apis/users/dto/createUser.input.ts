@@ -21,7 +21,7 @@ export class CreateUserInput {
   password: string;
 
   @IsString()
-  @MinLength(5, {
+  @MinLength(2, {
     message: 'Your nickname is too short! It must be 5 characters or more!',
   })
   @ApiProperty({
