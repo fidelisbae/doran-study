@@ -46,11 +46,10 @@ export class UserController {
     @Req() req: Express.Request,
     @Res() res: Response, //
   ) {
-    const result = await this.userService.getUser(req['header'].id);
+    const result = await this.userService.getUser(req['user'].id);
     return res.status(HttpStatus.OK).json(result);
   }
 
-  // ========================================================= //
   /** 회원가입하기 */
   @ApiOperation({
     summary: '회원가입하기',
