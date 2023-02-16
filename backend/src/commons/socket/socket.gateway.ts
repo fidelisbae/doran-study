@@ -74,7 +74,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const room = input['roomName'];
     const token = socket.handshake.headers.accesstoken as string;
     const user = await this.jwtService.verifyAsync(token, {
-      secret: 'accessKey',
+      secret: process.env.ACCESS_FOR_SECRET,
     });
 
     const isRoomExists = await this.redis_rooms.exists(room);
@@ -116,7 +116,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const room = input['roomName'];
     const token = socket.handshake.headers.accesstoken as string;
     const user = await this.jwtService.verifyAsync(token, {
-      secret: 'accessKey',
+      secret: process.env.ACCESS_FOR_SECRET,
     });
     const existRoom = await this.redis_rooms.get(room);
     const roomMembers = await this.chatService.getRoom(room);
@@ -160,7 +160,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const room = input['roomName'];
     const token = socket.handshake.headers.accesstoken as string;
     const user = await this.jwtService.verifyAsync(token, {
-      secret: 'accessKey',
+      secret: process.env.ACCESS_FOR_SECRET,
     });
     const existRoom = await this.redis_rooms.get(room);
 
@@ -206,7 +206,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const room = input['roomName'];
     const token = socket.handshake.headers.accesstoken as string;
     const user = await this.jwtService.verifyAsync(token, {
-      secret: 'accessKey',
+      secret: process.env.ACCESS_FOR_SECRET,
     });
 
     try {
@@ -230,7 +230,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const room = input['roomName'];
     const token = socket.handshake.headers.accesstoken as string;
     const user = await this.jwtService.verifyAsync(token, {
-      secret: 'accessKey',
+      secret: process.env.ACCESS_FOR_SECRET,
     });
     const isHost = await this.chatService.getHost(user.id, input.roomName);
 

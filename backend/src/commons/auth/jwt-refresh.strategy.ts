@@ -20,7 +20,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
           throw new UnauthorizedException();
         }
       },
-      secretOrKey: 'refreshToken',
+      secretOrKey: process.env.SECRET_FOR_REFRESH,
       passReqToCallback: true,
     });
   }
@@ -33,9 +33,8 @@ export class JwtRefreshStrategy extends PassportStrategy(
     if (req.headers['cookie'] === undefined) {
       throw new UnauthorizedException();
     } else {
-      cookie = req.headers['cookie'];
+      cookie = req.headers['cookie'].replace('refreshToken=', '');
     }
-    const refresh_Token = cookie.replace('refreshToken=', '');
 
     return {
       id: payload.id,

@@ -60,7 +60,7 @@ export class AuthService {
   ) {
     const accessToken = this.jwtService.sign(
       { id: user.id, nickName: user.nickName },
-      { secret: 'accessKey', expiresIn: '1h' },
+      { secret: process.env.SECRET_FOR_ACCESS, expiresIn: '1h' },
     );
     return accessToken;
   }
@@ -72,10 +72,11 @@ export class AuthService {
   ) {
     const refreshToken = this.jwtService.sign(
       { id: user.id, nickName: user.nickName },
-      { secret: 'refreshToken', expiresIn: '2w' },
+      { secret: process.env.SECRET_FOR_REFRESH, expiresIn: '2w' },
     );
     return res.setHeader('Set-Cookie', `refreshToken=${refreshToken}`);
   }
+  'refreshToken';
 
   /** 블랙리스트 등록하기 */
   async setBlackList(
