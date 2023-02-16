@@ -72,11 +72,13 @@ export class AuthController {
   ) {
     const user = req['user'];
     const header = req['headers'];
+    const refreshToken = header.cookie.replace('refreshToken=', '');
+    const accessToken = header.authorization.replace('Bearer ', '');
 
     const result = await this.authService.logout(
       user.id,
-      header.authorization,
-      header.cookie,
+      accessToken,
+      refreshToken,
     );
     return result === ERROR.SESSION_SUCCESS_PASSED
       ? res.status(201).json(ERROR.SESSION_SUCCESS_PASSED)
@@ -98,6 +100,15 @@ export class AuthController {
   ) {
     const userInfo = req['user'];
     const user = await this.userService.isValidUser(userInfo.id);
+
+    const oldAccessToken = req['headers'].authorization.replace('Bearer ', '');
+    const oldRefreshToken = req['headers'].cookie.replace('refreshToken=', '');
+
+    await this.authService.setBlackList(
+      user.id,
+      oldAccessToken,
+      oldRefreshToken,
+    );
 
     await this.authService.setRefreshToken(user, res);
     const accessToken = this.authService.getAccessToken(user);
