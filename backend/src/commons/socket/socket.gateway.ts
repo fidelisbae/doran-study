@@ -71,10 +71,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket, //
     @MessageBody() input: any,
   ) {
-    console.log('socketID', socket.id);
     const room = input['roomName'];
     const token = socket.handshake.headers.accesstoken as string;
-    console.log(socket.handshake.headers);
     const user = await this.jwtService.verifyAsync(token, {
       secret: 'accessKey',
     });
