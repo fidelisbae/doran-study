@@ -10,15 +10,11 @@ import { SocketModule } from './commons/socket/socket.module';
 
 @Module({
   imports: [
-    ///////////////////////////////////////////////////////////////////////////
-    // Environment Config //
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
     }),
 
-    ///////////////////////////////////////////////////////////////////////////
-    // TypeORM //
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: `${process.env.MYSQL_HOST}`,
@@ -33,8 +29,6 @@ import { SocketModule } from './commons/socket/socket.module';
       logging: true,
     }),
 
-    //////////////////////////////////////////////////////////////////////
-    // Redis //
     RedisModule.forRoot({
       config: [
         {
@@ -67,10 +61,15 @@ import { SocketModule } from './commons/socket/socket.module';
           db: 5,
           port: 26379,
         },
+        {
+          host: 'localhost',
+          namespace: 'user_listInRoom',
+          db: 6,
+          port: 26379,
+        },
       ],
     }),
 
-    // Modules
     AuthModule,
     ChatModule,
     UserModule,
