@@ -47,19 +47,22 @@ WebSocket 통신을 이용한 포켓몬을 실시간 교환하는 채팅 서비�
 
   > Access_Token 탈취 와 같은 보안 위험성을 보완 하고자 HttpOnly 쿠키에 Refresh_Token 관리하고 Access_Token의 유효기간을 짧게 둔다.
 
+### 🌐 WebSocket
+
+- Socket 연결 시 로그인 유저 검증
 - [채팅방 생성하고 입장하기](backend/src/commons/socket/socket.gateway.ts)
 
   > WebSocket은 양방향 데이터 통신 방법이다.  
   > Socket.io 라이브러리를 이용하여 채팅방을 구현하였다.  
-  > 로그인 유저의 채팅방 입장 및 닉네임 출력은 구현중에 있다.
+  > 로그인 유저의 채팅방 생성 및 입장 가능. 방 떠나기 및 유저 추방 추가.
 
   <br />
   <br />
 
-  ## 📖 작업하며 학습 내용
+  ## [📖 작업하며 학습 내용](https://fan-smile-44f.notion.site/efd4a9ab82c34d05865f1cd70f9295a1)
 
-- [🐋 Docker 설정](https://fan-smile-44f.notion.site/docker-e7343d1c57934b9fa8c8d7e39e590db5)
-- [프로토콜(양방향 통신인 Websocket과 그 이외의 통신규약)](https://fan-smile-44f.notion.site/Protocol-API-7ea172d4e91f46439f2c856e36fc562a)
+- [🐋 Docker 설정](https://yadoran.oopy.io/e9f0962c-c235-4124-b969-ca406b969867)
+- [WebSocket](https://yadoran.oopy.io/22d37fee-46ea-4621-abf8-3fd3a8ba9879)
 - Swagger에서 Header에 token을 싣는 방법.
   ```
    new DocumentBuilder().addBearerAuth(
@@ -74,4 +77,5 @@ WebSocket 통신을 이용한 포켓몬을 실시간 교환하는 채팅 서비�
       'access-token or refresh-token',
     )
   ```
-- [✅ 테스트 코드 작성](https://velog.io/@doll950904/NestJS-%ED%9A%8C%EC%9B%90%EA%B0%80%EC%9E%85-API%EC%9D%98-TestCode%EB%A5%BC-%EC%9E%91%EC%84%B1%ED%95%98%EC%9E%90with.Jest)
+- [✅ 테스트 코드 작성](https://yadoran.oopy.io/c8e8248a-b25c-4f5b-bab9-931ff29036e1)
+- [Token 검증 데코레이터](https://fan-smile-44f.notion.site/29362dd89a8f49cfbb6c51dd5fc7ec8c)
