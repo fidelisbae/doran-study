@@ -6,6 +6,8 @@
     "typeorm",
     "liaoliaots",
     "accesstoken",
-    "websockets"
+    "websockets",
+    "middlewares",
+    "checkPwdform"
   ]
 }
