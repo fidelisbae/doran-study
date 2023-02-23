@@ -17,7 +17,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { ERROR } from 'src/commons/utils/error.enum';
+import { ERROR } from 'src/commons/messages/message.enum';
 import { CheckIsValidToken } from 'src/commons/middlewares/check-isValidToken.guard';
 
 import { UserService } from './user.service';
@@ -30,77 +30,43 @@ import { DeleteUserInput } from './dto/deleteUser.input';
 export class UserController {
   constructor(
     private readonly userService: UserService, //
-
-    @InjectRedis('access_token')
-    private readonly access_token_pool: Redis,
   ) {}
 
   @ApiBearerAuth('access-token or refresh-token')
   @UseGuards(AuthGuard('accessToken'))
   @UseGuards(CheckIsValidToken)
-  @ApiOperation({
-    summary: '회원 정보 조회',
-  })
   @Get('/info')
-  async getUser(
+  async getUserById(
     @Req() req: Express.Request,
     @Res() res: Response, //
   ) {
-    const result = await this.userService.getUser(req['user'].id);
+    const result = await this.userService.getUserById(req['user'].id);
     return res.status(HttpStatus.OK).json(result);
   }
 
   /** 회원가입하기 */
-  @ApiOperation({
-    summary: '회원가입하기',
-  })
-  @ApiBody({
-    type: CreateUserInput, //
-  })
-  @Post('/')
+  @ApiBody({ type: CreateUserInput })
+  @Post()
   async createUser(
     @Body() input: CreateUserInput, //
     @Res() res: Response,
   ) {
-    await this.userService.checkInfo(input.id, input.nickName);
-    await this.userService.checkValidatePwd(input.password);
-
     const result = await this.userService.createUser(input);
-    const { deletedAt, createdAt, updatedAt, password, ...output } = result;
-
-    return res.status(HttpStatus.CREATED).json(output);
+    return res.status(HttpStatus.CREATED).json(result);
   }
 
   /** 회원정보 수정 */
   @ApiBearerAuth('access-token or refresh-token')
   @UseGuards(AuthGuard('accessToken'))
   @UseGuards(CheckIsValidToken)
-  @ApiOperation({
-    summary: '회원정보 수정하기',
-  })
-  @ApiBody({
-    type: UpdateUserInput, //
-  })
-  @Put('/')
+  @ApiBody({ type: UpdateUserInput })
+  @Put()
   async updateUser(
     @Body() input: UpdateUserInput, //
     @Req() req: Express.Request,
     @Res() res: Response,
   ) {
-    const accessToken = req['headers'].authorization.replace('Bearer ', '');
-    const bl_accessToken = await this.access_token_pool.get(accessToken);
-
-    if (bl_accessToken) {
-      throw new ConflictException(ERROR.CAN_NOT_LOGOUT);
-    }
-
-    const user = await this.userService.isValidUser(req['user'].id);
-    const isBool = await this.userService.updateUser(user.id, input);
-    const result =
-      isBool === true
-        ? ERROR.USER_UPDATE_INFO_SUCCEED
-        : ERROR.USER_UPDATE_INFO_FAILED;
-
+    const result = await this.userService.updateUser(req['user'].id, input);
     return res.status(HttpStatus.OK).json(result);
   }
 
@@ -108,37 +74,18 @@ export class UserController {
   @ApiBearerAuth('access-token or refresh-token')
   @UseGuards(AuthGuard('accessToken'))
   @UseGuards(CheckIsValidToken)
-  @ApiOperation({
-    summary: '회원탈퇴하기',
-  })
-  @ApiBody({
-    type: DeleteUserInput, //
-  })
-  @Delete('/')
+  @ApiBody({ type: DeleteUserInput })
+  @Delete()
   async deleteUser(
     @Body() input: DeleteUserInput, //
     @Req() req: Express.Request,
     @Res() res: Response,
   ) {
-    const accessToken = req['headers'].authorization.replace('Bearer ', '');
-    const bl_accessToken = await this.access_token_pool.get(accessToken);
-
-    if (bl_accessToken) {
-      throw new ConflictException(ERROR.REQUIRED_LOGIN);
-    }
-
-    const user = await this.userService.isValidUser(req['user'].id);
-    const isBool = await this.userService.deleteUser(
-      user.id,
+    const result = await this.userService.deleteUser(
+      req['user'].id,
       req['body'].password,
       input,
     );
-
-    const result =
-      isBool === true
-        ? ERROR.SUCCEED_DELETED_ACCOUNT
-        : ERROR.FAILED_DELETED_ACCOUNT;
-
     return res.status(HttpStatus.OK).json(result);
   }
 }
