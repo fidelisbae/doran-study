@@ -2,7 +2,7 @@ import { Repository } from 'typeorm';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { ERROR } from 'src/commons/utils/error.enum';
+import { ERROR } from 'src/commons/messages/message.enum';
 
 import { ChatEntity } from './entities/chat.entity';
 

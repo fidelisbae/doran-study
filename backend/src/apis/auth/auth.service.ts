@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import { ConflictException, Injectable } from '@nestjs/common';
 
-import { ERROR } from 'src/commons/utils/error.enum';
+import { ERROR } from 'src/commons/messages/message.enum';
 
 import { UserEntity } from '../users/entities/user.entity';
 import { UserService } from '../users/user.service';

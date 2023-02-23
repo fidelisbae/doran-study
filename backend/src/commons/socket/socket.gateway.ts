@@ -13,7 +13,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 
-import { ERROR } from '../utils/error.enum';
+import { ERROR } from '../messages/message.enum';
 import { ChatInput } from 'src/apis/chat/dto/chat.dto';
 import { ChatService } from 'src/apis/chat/chat.service';
 

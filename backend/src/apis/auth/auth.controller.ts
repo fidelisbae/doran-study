@@ -18,7 +18,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { ERROR } from 'src/commons/utils/error.enum';
+import { ERROR } from 'src/commons/messages/message.enum';
 import { UserService } from '../users/user.service';
 
 import { AuthInput } from './dto/login.input';
