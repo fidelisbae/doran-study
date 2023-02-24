@@ -4,9 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ChatModule } from 'src/apis/chat/chat.module';
 import { ChatEntity } from 'src/apis/chat/entities/chat.entity';
-import { ChatService } from 'src/apis/chat/chat.service';
 
 import { SocketGateway } from './socket.gateway';
+import { SocketService } from './socket.service';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { SocketGateway } from './socket.gateway';
     ]),
     ChatModule,
   ], //
-  providers: [SocketGateway, ChatService],
+  providers: [SocketGateway, SocketService],
   exports: [SocketGateway],
 })
 export class SocketModule {}
