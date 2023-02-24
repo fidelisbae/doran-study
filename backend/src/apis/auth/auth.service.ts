@@ -1,7 +1,13 @@
 import Redis from 'ioredis';
+import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 import { ERROR } from 'src/commons/messages/message.enum';
 
@@ -21,12 +27,22 @@ export class AuthService {
     private readonly access_token_pool: Redis,
   ) {}
 
+  /** 로그인 */
+  async login(id: string, pwd: string, res: any) {
+    const user = await this.userService.isValidUser(id);
+    const isAuthenticated = await bcrypt.compare(pwd, user.password);
+    if (!isAuthenticated)
+      throw new UnauthorizedException(ERROR.INVALID_USER_PASSWORD);
+
+    await this.setRefreshToken(user, res);
+    return await this.setAccessToken(user);
+  }
+
   /** 로그아웃 */
-  async logout(
-    userID: string,
-    accessToken: string,
-    refreshToken: string, //
-  ) {
+  async logout(userID: string, req: any) {
+    const refreshToken = req['headers'].cookie.replace('refreshToken=', '');
+    const accessToken = req['headers'].authorization.replace('Bearer ', '');
+
     let result = false;
     const user = await this.userService.isValidUser(userID);
 
@@ -36,61 +52,72 @@ export class AuthService {
       result = true;
     }
 
-    const isAccessToken = await this.access_token_pool.get(
-      accessToken.replace('Bearer ', ''),
-    );
-    const isRefreshToken = await this.refresh_token_pool.get(
-      refreshToken.replace('refreshToken=', ''),
-    );
+    try {
+      const isAccessToken = await this.access_token_pool.get(accessToken);
+      const isRefreshToken = await this.refresh_token_pool.get(refreshToken);
+      if (isAccessToken && isRefreshToken)
+        throw new ConflictException(ERROR.CAN_NOT_LOGOUT);
 
-    if (isAccessToken && isRefreshToken) {
-      throw new ConflictException(ERROR.CAN_NOT_LOGOUT);
+      await this.setBlackList(userID, accessToken, refreshToken);
+      return result;
+    } catch (e) {
+      throw new InternalServerErrorException(e);
     }
+  }
 
-    await this.setBlackList(userID, accessToken, refreshToken);
+  /** AccessToken 재발급 */
+  async restoreAccessToken(req: any, res: any) {
+    const user = await this.userService.isValidUser(req['user'].id);
 
-    return result === true
-      ? ERROR.SESSION_SUCCESS_PASSED
-      : ERROR.SESSION_DESTROY_FAILED;
+    const oldAccessToken = req['headers'].authorization.replace('Bearer ', '');
+    const oldRefreshToken = req['headers'].cookie.replace('refreshToken=', '');
+
+    await this.setBlackList(user.id, oldAccessToken, oldRefreshToken);
+    await this.setRefreshToken(user, res);
+    return await this.setAccessToken(user);
   }
 
   /** AccessToken 발급 */
-  getAccessToken(
-    user: UserEntity, //
-  ) {
-    const accessToken = this.jwtService.sign(
-      { id: user.id, nickName: user.nickName },
-      { secret: process.env.SECRET_FOR_ACCESS, expiresIn: '1h' },
-    );
-    return accessToken;
+  async setAccessToken(user: UserEntity) {
+    try {
+      return this.jwtService.sign(
+        { id: user.id, nickName: user.nickName },
+        { secret: process.env.SECRET_FOR_ACCESS, expiresIn: '1h' },
+      );
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
   }
 
-  /** RefreshToken 생성 */
-  setRefreshToken(
-    user: UserEntity, //
-    res: any,
-  ) {
-    const refreshToken = this.jwtService.sign(
-      { id: user.id, nickName: user.nickName },
-      { secret: process.env.SECRET_FOR_REFRESH, expiresIn: '2w' },
-    );
-    return res.setHeader('Set-Cookie', `refreshToken=${refreshToken}`);
+  /** RefreshToken 발급 */
+  async setRefreshToken(user: UserEntity, res: any) {
+    try {
+      const refreshToken = this.jwtService.sign(
+        { id: user.id, nickName: user.nickName },
+        { secret: process.env.SECRET_FOR_REFRESH, expiresIn: '2w' },
+      );
+      return res.setHeader('Set-Cookie', `refreshToken=${refreshToken}`);
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
   }
-  'refreshToken';
 
   /** 블랙리스트 등록하기 */
   async setBlackList(
     userID: string,
-    accessToken: string, //
+    accessToken: string,
     refreshToken: string,
   ) {
-    await this.access_token_pool.set(accessToken, userID, 'EX', 3600);
-
-    await this.refresh_token_pool.set(
-      refreshToken,
-      userID,
-      'EX',
-      3600 * 24 * 14,
-    );
+    try {
+      await this.access_token_pool.set(accessToken, userID, 'EX', 3600);
+      await this.refresh_token_pool.set(
+        refreshToken,
+        userID,
+        'EX',
+        3600 * 24 * 14,
+      );
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
   }
 }
