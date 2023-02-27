@@ -48,3 +48,9 @@ export class RedisConfig {
     };
   }
 }
+
+export const redisConfigAsync: RedisModuleAsyncOptions = {
+  useFactory: async (configService: ConfigService) =>
+    RedisConfig.getRedisConfig(configService),
+  inject: [ConfigService],
+};
