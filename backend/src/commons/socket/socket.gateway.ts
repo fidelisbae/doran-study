@@ -31,7 +31,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @InjectRedis('rooms')
     private readonly redis_rooms: Redis,
 
-    @InjectRedis('BannedUsers')
+    @InjectRedis('Banned-users')
     private readonly redis_banned_users: Redis,
   ) {}
   private logger: Logger = new Logger('SocketGateway');
