@@ -4,6 +4,8 @@ import {
   TypeOrmModuleOptions,
 } from '@nestjs/typeorm';
 
+import { UserEntity } from 'src/apis/users/entities/user.entity';
+
 export class TypeOrmConfig {
   static getOrmConfig(configService: ConfigService): TypeOrmModuleOptions {
     return {
@@ -13,7 +15,7 @@ export class TypeOrmConfig {
       username: configService.get<string>('MYSQL_USER_NAME'),
       password: configService.get<string>('MYSQL_ROOT_PASSWORD'),
       database: configService.get<string>('MYSQL_DATABASE'),
-      entities: [__dirname + '/apis/**/*.entity.*'],
+      entities: [UserEntity],
       logging: true,
       synchronize: true,
     };
