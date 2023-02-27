@@ -1,8 +1,8 @@
+import { ConfigService } from '@nestjs/config';
 import {
   RedisModuleAsyncOptions,
   RedisModuleOptions,
 } from '@liaoliaots/nestjs-redis';
-import { ConfigService } from '@nestjs/config';
 
 export class RedisConfig {
   static getRedisConfig(configService: ConfigService): RedisModuleOptions {
