@@ -64,7 +64,7 @@ export class AuthController {
   @ApiBearerAuth('access-token or refresh-token')
   @ApiUnauthorizedResponse({ description: 'Invalid Credential' })
   @UseGuards(AuthGuard('refreshToken'))
-  @Post()
+  @Post('/restore-access-token')
   async restoreAccessToken(
     @Req() req: Express.Request, //
     @Res() res: Response,
