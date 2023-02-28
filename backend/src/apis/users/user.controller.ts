@@ -1,11 +1,8 @@
-import Redis from 'ioredis';
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
-import { InjectRedis } from '@liaoliaots/nestjs-redis';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import {
   Body,
-  ConflictException,
   Controller,
   Delete,
   Get,
@@ -17,7 +14,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { ERROR } from 'src/commons/messages/message.enum';
 import { CheckIsValidToken } from 'src/commons/middlewares/check-isValidToken.guard';
 
 import { UserService } from './user.service';

@@ -4,8 +4,6 @@ import {
   TypeOrmModuleOptions,
 } from '@nestjs/typeorm';
 
-import { UserEntity } from 'src/apis/users/entities/user.entity';
-
 export class TypeOrmConfig {
   static getOrmConfig(configService: ConfigService): TypeOrmModuleOptions {
     return {

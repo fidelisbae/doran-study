@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, MinLength } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class DeleteUserInput {
   @IsString()

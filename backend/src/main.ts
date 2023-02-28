@@ -5,10 +5,7 @@ import { setupSwagger } from './commons/utils/swaggerSetup.util';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  /** Swagger  */
   setupSwagger(app);
-
   app.enableCors();
   await app.listen(3001);
 }

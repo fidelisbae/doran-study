@@ -1,22 +1,12 @@
-import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
   ApiBody,
-  ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import {
-  Body,
-  Controller,
-  Post,
-  Req,
-  Res,
-  UnauthorizedException,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 
 import { ERROR } from 'src/commons/messages/message.enum';
 import { UserService } from '../users/user.service';
