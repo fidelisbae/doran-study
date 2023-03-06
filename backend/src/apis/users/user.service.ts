@@ -100,8 +100,8 @@ export class UserService {
 
   /** 회원정보 수정 */
   async updateUser(id: string, input: UpdateUserInput) {
-    await this.isValidUser(id);
-    if (input.nickName.length < 2)
+    const user = await this.isValidUser(id);
+    if (input.nickName && input.nickName.length < 2)
       throw new ConflictException(ERROR.INVALID_FORM);
 
     if (input.password) {
