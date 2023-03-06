@@ -7,6 +7,9 @@ export const ERROR = Object.freeze({
   ///////////////////////////////////////////////////////////////////
   // user //
   // prettier-ignore
+  SUCCEED_CREATE_ACCOUNT: { status: 201, message: '회원가입이 완료되었습니다.' },
+  FAILED_CREATE_ACCOUNT: { status: 400, message: '회원가입에 실패했습니다.' },
+  // prettier-ignore
   INVALID_FORM: { status: 400, message: '아이디와 닉네임은 5글자 이상이여야 합니다.' },
   // prettier-ignore
   USER_UPDATE_INFO_SUCCEED: { status: 201, message: '정보 수정이 완료되었습니다.' },
