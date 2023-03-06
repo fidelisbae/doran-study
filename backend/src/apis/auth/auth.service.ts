@@ -96,7 +96,10 @@ export class AuthService {
         { id: user.id, nickName: user.nickName },
         { secret: process.env.SECRET_FOR_REFRESH, expiresIn: '2w' },
       );
-      return res.setHeader('Set-Cookie', `refreshToken=${refreshToken}`);
+      return res.setHeader(
+        'Set-Cookie',
+        `refreshToken=${refreshToken}; path=/; domain=.jp.ngrok.io; SameSite=None; Secure; httpOnly;`,
+      );
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
